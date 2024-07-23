@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  setup:
+    image: busybox
+    volumes:
+      - data_volume:/data
+    command: >
+      sh -c "mkdir -p /data/annotations/train /data/annotations/val /data/images/train /data/images/val"
+  preprocessor:
+    build:
+      context: .
+      dockerfile: ./preprocessing/Dockerfile
+    volumes:
+      - data_volume:/data
+    env_file:
+      - .env
+
+volumes:
+  data_volume:
