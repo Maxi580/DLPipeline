@@ -1,13 +1,15 @@
 version: '3'
 
 services:
-  setup:
+  data_volume:
     image: busybox
+    restart: "no"
     volumes:
       - data_volume:/data
     command: >
-      sh -c "mkdir -p /data/annotations/train /data/annotations/val /data/images/train /data/images/val"
+      sh -c "mkdir -p /data/annotations /data/images"
   preprocessor:
+    restart: "no"
     build:
       context: .
       dockerfile: ./preprocessing/Dockerfile

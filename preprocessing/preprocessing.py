@@ -6,7 +6,6 @@ from PIL import Image
 
 CREATE_YOLO_MODEL = os.getenv('CREATE_YOLO_MODEL')
 
-
 TRAIN_PATH = os.getenv('TRAIN_PATH')
 VAL_PATH = os.getenv('VAL_PATH')
 IMAGES_PATH = os.getenv('IMAGES_PATH')
@@ -19,9 +18,6 @@ DATA_ANNOTATION_DIR = DATA_PATH + ANNOTATION_PATH
 YOLO_OUTPUT_DIR = os.getenv('YOLO_OUTPUT_DIR')
 YOLO_OUTPUT_ANNOTATION_DIR = YOLO_OUTPUT_DIR + ANNOTATION_PATH
 YOLO_OUTPUT_IMAGE_DIR = YOLO_OUTPUT_DIR + IMAGES_PATH
-
-DIRS_TO_CREATE = [YOLO_OUTPUT_ANNOTATION_DIR + TRAIN_PATH, YOLO_OUTPUT_ANNOTATION_DIR + VAL_PATH,
-                  YOLO_OUTPUT_IMAGE_DIR + TRAIN_PATH, YOLO_OUTPUT_IMAGE_DIR + VAL_PATH]
 
 IMAGE_WIDTH = 640
 IMAGE_HEIGHT = 640
@@ -47,8 +43,8 @@ def is_xml_file(file):
     return file.lower().endswith('.xml')
 
 
-def create_directories():
-    for directory in DIRS_TO_CREATE:
+def create_directories(directories):
+    for directory in directories:
         if not os.path.exists(directory):
             os.makedirs(directory, exist_ok=True)
 
@@ -147,8 +143,16 @@ def main():
     try:
         all_paths = ([DATA_ANNOTATION_DIR + TRAIN_PATH, DATA_ANNOTATION_DIR + VAL_PATH] +
                      [DATA_IMAGES_DIR + TRAIN_PATH, DATA_IMAGES_DIR + VAL_PATH])
+        create_directories(all_paths)
+
+        yolo_paths = ([YOLO_OUTPUT_IMAGE_DIR + TRAIN_PATH, YOLO_OUTPUT_IMAGE_DIR + VAL_PATH,
+                       YOLO_OUTPUT_ANNOTATION_DIR + TRAIN_PATH, YOLO_OUTPUT_ANNOTATION_DIR + VAL_PATH])
+        create_directories(yolo_paths)
+
+        # Check If Training Data is available
         check_directories(all_paths)
-        create_directories()
+
+
     except ValueError as e:
         print(e)
 
