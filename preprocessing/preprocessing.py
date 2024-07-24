@@ -1,4 +1,3 @@
-import csv
 import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -19,12 +18,6 @@ YOLO_OUTPUT_DIR = os.getenv('YOLO_OUTPUT_DIR')
 YOLO_OUTPUT_ANNOTATION_DIR = YOLO_OUTPUT_DIR + ANNOTATION_PATH
 YOLO_OUTPUT_IMAGE_DIR = YOLO_OUTPUT_DIR + IMAGES_PATH
 
-CSV_CLASS_NAMES = os.getenv('CSV_CLASS_NAMES')
-XMIN_NAMES = os.getenv('XMIN_NAMES')
-YMIN_NAMES = os.getenv('YMIN_NAMES')
-XMAX_NAMES = os.getenv('XMAX_NAMES')
-YMAX_NAMES = os.getenv('YMAX_NAMES')
-
 IMAGE_WIDTH = 640
 IMAGE_HEIGHT = 640
 
@@ -41,8 +34,8 @@ def check_directories(paths):
             raise ValueError(f"Error: Directory is empty: {path}")
 
 
-def is_csv_file(file):
-    return file.lower().endswith('.csv')
+def is_txt_file(file):
+    return file.lower().endswith('.txt')
 
 
 def is_xml_file(file):
@@ -55,56 +48,17 @@ def create_directories(directories):
             os.makedirs(directory, exist_ok=True)
 
 
-def get_column_name(header, possible_names):
-    header_lower = [h.lower() for h in header]
-    for name in possible_names:
-        if name.lower() in header_lower:
-            return header[header_lower.index(name.lower())]
-    raise ValueError(f"Could not find any of these columns: {possible_names}")
+def preprocess_yolo_annotation_txt(input_path, output_path, filename):
+    input_file = os.path.join(input_path, filename)
+    output_file = os.path.join(output_path, filename)
 
-
-def preprocess_yolo_annotation_csv(csv_file, output_file):
-    """
-    Yolo txt annotation File Format: <class_id> <x> <y> <width> <height>
-    """
-    with open(csv_file, 'r') as csv_input, open(output_file, 'w') as yolo_file:
-        csv_reader = csv.DictReader(csv_input)
-        header = csv_reader.fieldnames
-
-        # Get column names, if defined in possible Column Names
-        class_col = get_column_name(header, CSV_CLASS_NAMES)
-        xmin_col = get_column_name(header, XMIN_NAMES)
-        ymin_col = get_column_name(header, YMIN_NAMES)
-        xmax_col = get_column_name(header, XMAX_NAMES)
-        ymax_col = get_column_name(header, YMAX_NAMES)
-
-        # Check if all required columns are found
-        if not all([class_col, xmin_col, ymin_col, xmax_col, ymax_col]):
-            missing_columns = [name for name, col in [
-                ("Class", class_col), ("X Min", xmin_col), ("Y Min", ymin_col),
-                ("X Max", xmax_col), ("Y Max", ymax_col)
-            ] if col is None]
-            raise ValueError(f"Missing required columns: {', '.join(missing_columns)}. Change possible column "
-                             f"names in .env file.")
-
-        for row in csv_reader:
-            class_name = row[class_col]
-            if class_name not in CLASSES:
-                print(f"Warning: Class '{class_name}' not found in classes list. Skipping this annotation.")
-                continue
-            class_id = CLASSES.index(class_name)
-
-            x_min = float(row[xmin_col])
-            y_min = float(row[ymin_col])
-            x_max = float(row[xmax_col])
-            y_max = float(row[ymax_col])
-
-            x_center = (x_min + x_max) / 2.0 / IMAGE_WIDTH
-            y_center = (y_min + y_max) / 2.0 / IMAGE_HEIGHT
-            width = (x_max - x_min) / IMAGE_WIDTH
-            height = (y_max - y_min) / IMAGE_HEIGHT
-
-            yolo_file.write(f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}\n")
+    try:
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+            for line in infile:
+                outfile.write(line)
+    except Exception as e:
+        print(f"An unexpected error occurred while copying {filename}: {e}")
 
 
 def preprocess_yolo_annotation_xml(folder, xml_file, output_file):
@@ -190,8 +144,9 @@ def preprocess_yolo():
             annotation_file_name = os.path.splitext(os.path.basename(file))[0]
             output_file = os.path.join(f"{annotation_output_paths[i]}/{annotation_file_name}.txt")
 
-            if is_csv_file(file):
-                preprocess_yolo_annotation_csv(file, output_file)
+            if is_txt_file(file):
+                preprocess_yolo_annotation_txt(annotation_input_paths[i], annotation_output_paths[i],
+                                               annotation_file_name)
 
             if is_xml_file(file):
                 preprocess_yolo_annotation_xml(annotation_input_paths[i], file, output_file)
