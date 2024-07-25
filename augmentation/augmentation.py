@@ -2,8 +2,6 @@ import numpy as np
 from PIL import Image
 from utils import *
 
-from aug_albumentations import augmentation
-
 ALBUMENTATION_YOLO_OUTPUT_DIR = os.getenv('ALBUMENTATION_YOLO_OUTPUT_DIR')
 
 NUM_AUGMENTATIONS = int(os.getenv('NUM_AUGMENTATIONS'))
@@ -49,7 +47,7 @@ def yolo_augmentation():
                     albumentations_image_directories = albumentation_paths[0]
                     albumentations_annotation_directories = albumentation_paths[1]
 
-                    for number_of_augmentations in range(NUM_AUGMENTATIONS):  # Todo ???
+                    for number_of_augmentations in range(NUM_AUGMENTATIONS):
                         bbox, class_labels = read_yolo_file(annotation_path)
                         bbox_format = 'yolo'
                         with Image.open(image_path) as img:

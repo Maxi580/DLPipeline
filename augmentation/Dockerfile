@@ -9,4 +9,4 @@ COPY augmentation .
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "augmentation.py"]
+CMD ["python", "pixmix.py"]
