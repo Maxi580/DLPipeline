@@ -1,10 +1,14 @@
 import os
 import numpy as np
+from PIL import Image
 
 TRAIN_PATH = os.getenv('TRAIN_PATH')
 VAL_PATH = os.getenv('VAL_PATH')
 IMAGES_PATH = os.getenv('IMAGES_PATH')
 ANNOTATION_PATH = os.getenv('ANNOTATION_PATH')
+
+WIDTH = os.getenv('WIDTH')
+HEIGHT = os.getenv('HEIGHT')
 
 DATA_SPLIT_DIRECTORY = [TRAIN_PATH, VAL_PATH]
 
@@ -78,21 +82,14 @@ def save_yolo_file(directory, filename, bboxes, class_ids):
             f.write(line)
 
 
-def yolo_to_albumentations(bbox):
-    x_center, y_center, width, height = bbox
-    x_min = x_center - width / 2
-    y_min = y_center - height / 2
-    x_max = x_center + width / 2
-    y_max = y_center + height / 2
+def load_image_set(directory_path):
+    image_paths = []
+    valid_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
 
-    return [max(0, min(1, x_min)), max(0, min(1, y_min)),
-            max(0, min(1, x_max)), max(0, min(1, y_max))]
+    for filename in os.listdir(directory_path):
+        if any(filename.lower().endswith(ext) for ext in valid_extensions):
+            image_path = os.path.join(directory_path, filename)
+            image_paths.append(image_path)
 
+    return image_paths
 
-def albumentations_to_yolo(bbox):
-    x_min, y_min, x_max, y_max = bbox
-    x_center = (x_min + x_max) / 2
-    y_center = (y_min + y_max) / 2
-    width = x_max - x_min
-    height = y_max - y_min
-    return [x_center, y_center, width, height]

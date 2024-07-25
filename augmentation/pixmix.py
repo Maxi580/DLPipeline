@@ -1,71 +1,66 @@
+import random
 import numpy as np
 import os
-import torch
 from PIL import Image
-from torchvision import transforms
-import augmentation.pixmix_utils as utils
+from augmentation_utils import *
+from mix_utils import *
+from utils import *
 
 FRACTAL_PATH = os.getenv('FRACTAL_PATH')
-IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
-IMAGE_HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
+WIDTH = os.getenv('IMAGE_WIDTH')
+HEIGHT = os.getenv('IMAGE_HEIGHT')
 
 
-def load_image_set(directory_path):
-    image_set = []
-    valid_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+def apply_random_augmentation(image):
+    augmentation_functions = [
+        flip_horizontal,
+        rotate,
+        adjust_brightness,
+        adjust_contrast,
+        adjust_saturation,
+        add_noise,
+        blur,
+        sharpen
+    ]
 
-    transform = transforms.Compose([
-        transforms.Resize((IMAGE_WIDTH, IMAGE_HEIGHT)),
-        transforms.ToTensor(),
-    ])
-
-    for filename in os.listdir(directory_path):
-        if any(filename.lower().endswith(ext) for ext in valid_extensions):
-            image_path = os.path.join(directory_path, filename)
-            try:
-                with Image.open(image_path) as img:
-                    img = transform(img)
-                    image_set.append(img)
-            except IOError:
-                print(f"Error loading image: {image_path}")
-
-    return image_set
+    aug_func = random.choice(augmentation_functions)
+    return aug_func(image)
 
 
-def pixmix(orig, augmentation_chance=0.5, mixing_chance=0.1, beta=3):
-    mixings = utils.mixings
-    tensorize = transforms.ToTensor()
+def apply_pixmix(image, mixing_set, p_aug=0.5, p_mix=0.3):
+    # Apply random augmentation
+    if random.random() < p_aug:
+        image = apply_random_augmentation(image)
 
-    #  50% Chance of normal augmentation
-    if np.random.random() < augmentation_chance:
-        mixed = tensorize(augment_input(orig))
-    else:
-        mixed = tensorize(orig)
+    # Mix with a random image from the mixing set
+    if random.random() < p_mix:
+        mixing_pic_path = random.choice(mixing_set)
+        mixing_pic = Image.open(mixing_pic_path)
+        alpha = random.uniform(0.2, 0.4)
+        image = mix_images(image, mixing_pic, alpha)
 
-    # Chance of Mixing with fractal
-    if np.random.random() < mixing_chance:
-        aug_image_copy = tensorize(augment_input(orig))
-        mixed_op = np.random.choice(mixings)
-        mixed = mixed_op(mixed, aug_image_copy, beta)
-        mixed = torch.clip(mixed, 0, 1)
-
-    return mixed
+    return image
 
 
-def augment_input(image, aug_severity=3):
-    aug_list = utils.augmentations_all
-    op = np.random.choice(aug_list)
-    return op(image.copy(), aug_severity)
+def process_and_save_images(input_path, output_path, mixing_set):
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_path, exist_ok=True)
 
+    # Process each image in the input directory
+    for filename in os.listdir(input_path):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+            input_image_path = os.path.join(input_path, filename)
+            with Image.open(input_image_path) as img:
+                augmented_img = apply_pixmix(img, mixing_set)
 
-def apply_pixmix_to_image(image, mixing_set):
-    mixing_pic = np.random.choice(mixing_set)
-    return pixmix(image, mixing_pic)
+                output_filename = f"augmented_{filename}"
+                output_image_path = os.path.join(output_path, output_filename)
+                augmented_img.save(output_image_path)
 
 
 if __name__ == '__main__':
-    mixing_set = load_image_set(FRACTAL_PATH)
-    picture_path = 'C:/Users/a880902/OneDrive - Eviden/Desktop/Datasetss/LicensePlates/images/train'
-    image_data_set = load_image_set(picture_path)
+    mixing_set = load_image_set('C:/Users/maxie/Desktop/DLPipeline/augmentation/fractals')
+    picture_path = 'C:/Users/maxie/Desktop/LicensePlateData/images/train'
+    output_path = 'C:/Users/maxie/Desktop/LicensePlateData/images/augmented'
 
-    apply_pixmix_to_image(picture_path, mixing_set)
+    process_and_save_images(picture_path, output_path, mixing_set)
