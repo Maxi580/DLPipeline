@@ -1,37 +1,18 @@
-import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from PIL import Image
+from utils import *
 
 CREATE_YOLO_MODEL = os.getenv('CREATE_YOLO_MODEL')
 
-TRAIN_PATH = os.getenv('TRAIN_PATH')
-VAL_PATH = os.getenv('VAL_PATH')
-IMAGES_PATH = os.getenv('IMAGES_PATH')
-ANNOTATION_PATH = os.getenv('ANNOTATION_PATH')
-DATA_PATH = os.getenv('DATA_PATH')
+INPUT_DATA_DIR = os.getenv('INPUT_DATA_DIR')
+PREPROCESSING_YOLO_OUTPUT_DIR = os.getenv('PREPROCESSING_YOLO_OUTPUT_DIR')
 
-DATA_IMAGES_DIR = DATA_PATH + IMAGES_PATH
-DATA_ANNOTATION_DIR = DATA_PATH + ANNOTATION_PATH
-
-YOLO_OUTPUT_DIR = os.getenv('YOLO_OUTPUT_DIR')
-YOLO_OUTPUT_ANNOTATION_DIR = YOLO_OUTPUT_DIR + ANNOTATION_PATH
-YOLO_OUTPUT_IMAGE_DIR = YOLO_OUTPUT_DIR + IMAGES_PATH
 
 IMAGE_WIDTH = 640
 IMAGE_HEIGHT = 640
 
 CLASSES = os.getenv('CLASSES')
-
-
-def is_directory_empty(directory_path):
-    return len(os.listdir(directory_path)) == 0
-
-
-def check_directories(paths):
-    for path in paths:
-        if is_directory_empty(path):
-            raise ValueError(f"Error: Directory is empty: {path}")
 
 
 def is_txt_file(file):
@@ -42,27 +23,19 @@ def is_xml_file(file):
     return file.lower().endswith('.xml')
 
 
-def create_directories(directories):
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-
-
-def preprocess_yolo_annotation_txt(input_path, output_path, filename):
-    input_file = os.path.join(input_path, filename)
-    output_file = os.path.join(output_path, filename)
-
+def preprocess_yolo_annotation_txt(input_file, output_file):
     try:
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             for line in infile:
                 outfile.write(line)
     except Exception as e:
-        print(f"An unexpected error occurred while copying {filename}: {e}")
+        print(f"An unexpected error occurred while copying txt annotations: {e}")
 
 
-def preprocess_yolo_annotation_xml(folder, xml_file, output_file):
-    tree = ET.parse(os.path.join(folder, xml_file))
+def preprocess_yolo_annotation_xml(xml_folder, xml_file, output_file):
+    """YOLO format: <class_id> <x_center> <y_center> <width> <height>"""
+    tree = ET.parse(os.path.join(xml_folder, xml_file))
     root = tree.getroot()
 
     with open(output_file, 'w') as yolo_file:
@@ -84,7 +57,7 @@ def preprocess_yolo_annotation_xml(folder, xml_file, output_file):
             yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
 
 
-def preprocess_yolo_images(input_dir, output_dir, annotation_file_path):
+def preprocess_yolo_images(input_dir, output_dir, annotation_dir):
     """
     Yolo can handle JPG/JPEG, PNG, BMP, TIFF
     """
@@ -92,6 +65,8 @@ def preprocess_yolo_images(input_dir, output_dir, annotation_file_path):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.tif')):
             input_path = os.path.join(input_dir, filename)
             output_path = os.path.join(output_dir, filename)
+
+            basename = os.path.splitext(filename)[0]
             # Ensuring annotation and Image have same base name
 
             with Image.open(input_path) as img:
@@ -100,10 +75,10 @@ def preprocess_yolo_images(input_dir, output_dir, annotation_file_path):
                 img_resized.save(output_path)
 
             # Adjust annotations to resize
-            label_path = os.path.join(annotation_file_path, filename)
+            label_path = os.path.join(annotation_dir, f"{basename}.txt")
             if not os.path.exists(label_path):
-                raise FileNotFoundError(f"Annotation file not found: {label_path}. Please make Sure annotations"
-                                        f"have the same Name as Images.")
+                print(f"Warning: Annotation file not found: {label_path}. Skipping this image.")
+                return
 
             with open(label_path, 'r') as f:
                 lines = f.readlines()
@@ -132,50 +107,48 @@ def preprocess_yolo_images(input_dir, output_dir, annotation_file_path):
 
 def preprocess_yolo():
     """Resize Images / Extract relevant YOLO Information from annotations and format it correctly"""
-    annotation_input_paths = [DATA_ANNOTATION_DIR + TRAIN_PATH, DATA_ANNOTATION_DIR + VAL_PATH]
-    annotation_output_paths = [YOLO_OUTPUT_ANNOTATION_DIR + TRAIN_PATH, YOLO_OUTPUT_ANNOTATION_DIR + VAL_PATH]
+    input_subdirectories = get_subdirectories(INPUT_DATA_DIR)
+    input_image_directories = input_subdirectories[0]
+    input_annotations_directories = input_subdirectories[1]
 
-    image_input_paths = [DATA_IMAGES_DIR + TRAIN_PATH, DATA_IMAGES_DIR + VAL_PATH]
-    image_output_paths = [YOLO_OUTPUT_IMAGE_DIR + TRAIN_PATH, YOLO_OUTPUT_IMAGE_DIR + VAL_PATH]
+    output_subdirectories = get_subdirectories(PREPROCESSING_YOLO_OUTPUT_DIR)
+    output_image_directories = output_subdirectories[0]
+    output_annotations_directories = output_subdirectories[1]
 
-    for i in range(2):
-        for file in os.listdir(Path(annotation_input_paths[i])):
-            # Process Annotations
+    for i in range(len(input_annotations_directories)):
+        # Process Annotations
+        for file in os.listdir(Path(input_annotations_directories[i])):
             annotation_file_name = os.path.splitext(os.path.basename(file))[0]
-            output_file = os.path.join(f"{annotation_output_paths[i]}/{annotation_file_name}.txt")
+            output_file = os.path.join(f"{output_annotations_directories[i]}/{annotation_file_name}.txt")
 
             if is_txt_file(file):
-                preprocess_yolo_annotation_txt(annotation_input_paths[i], annotation_output_paths[i],
-                                               annotation_file_name)
+                preprocess_yolo_annotation_txt(file, output_file)
 
             if is_xml_file(file):
-                preprocess_yolo_annotation_xml(annotation_input_paths[i], file, output_file)
+                preprocess_yolo_annotation_xml(input_annotations_directories[i], file, output_file)
 
-        # Process Images
-        preprocess_yolo_images(image_input_paths[i], image_output_paths[i], annotation_output_paths[i])
+    for i in range(len(input_image_directories)):
+        # Process Images (Annotations need to be processed as they are adjusted by image resize)
+        preprocess_yolo_images(input_image_directories[i], output_image_directories[i],
+                               output_annotations_directories[i])
 
 
 def main():
     """Preprocess every Image and Annotation, to fit the according model"""
-
-    # Ensure That every Directory exists and the data directories contain files
     try:
-        all_paths = ([DATA_ANNOTATION_DIR + TRAIN_PATH, DATA_ANNOTATION_DIR + VAL_PATH] +
-                     [DATA_IMAGES_DIR + TRAIN_PATH, DATA_IMAGES_DIR + VAL_PATH])
-        create_directories(all_paths)
-
-        yolo_paths = ([YOLO_OUTPUT_IMAGE_DIR + TRAIN_PATH, YOLO_OUTPUT_IMAGE_DIR + VAL_PATH,
-                       YOLO_OUTPUT_ANNOTATION_DIR + TRAIN_PATH, YOLO_OUTPUT_ANNOTATION_DIR + VAL_PATH])
-        create_directories(yolo_paths)
-
         # Check If Training Data is available
-        check_directories(all_paths)
-
+        input_image_paths, input_annotation_paths = get_subdirectories(INPUT_DATA_DIR)
+        check_directory_content(input_image_paths + input_annotation_paths)
     except ValueError as e:
-        print(e)
+        print(f"Directory Content Check could not be performed: {e}")
 
     if CREATE_YOLO_MODEL:
+        # Create Directories to store processed YOLO Data
+        yolo_image_paths, yolo_annotation_paths = get_subdirectories(PREPROCESSING_YOLO_OUTPUT_DIR)
+        create_directories(yolo_image_paths + yolo_annotation_paths)
+
         preprocess_yolo()
 
 
-main()
+if __name__ == '__main__':
+    main()

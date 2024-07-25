@@ -7,12 +7,27 @@ services:
     volumes:
       - data_volume:/data
     command: >
-      sh -c "mkdir -p /data/annotations /data/images"
-  preprocessor:
+      sh -c "
+              mkdir -p /data/annotations/train
+              mkdir -p /data/annotations/val
+              mkdir -p /data/images/train
+              mkdir -p /data/images/val
+              mkdir -p /data/fractals
+            "
+  preprocessing:
     restart: "no"
     build:
       context: .
       dockerfile: ./preprocessing/Dockerfile
+    volumes:
+      - data_volume:/data
+    env_file:
+      - .env
+  augmentation:
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./augmentation/Dockerfile
     volumes:
       - data_volume:/data
     env_file:
