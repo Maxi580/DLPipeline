@@ -34,6 +34,9 @@ def preprocess_xml_annotation(xml_folder, xml_file, output_file):
     tree = ET.parse(os.path.join(xml_folder, xml_file))
     root = tree.getroot()
 
+    name = os.path.splitext(os.path.basename(xml_file))[0]
+    output_file = os.path.join(output_file, name + '.txt')
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, 'w') as yolo_file:
         for obj in root.findall('object'):
             class_name = obj.find('name').text
@@ -64,6 +67,7 @@ def format_annotations(input_directory, output_directory):
 def resize_annotation(base_name, original_width, original_height, output_dir):
     """Adjust annotations to image resize"""
     annotation_path = os.path.join(output_dir, f"{base_name}.txt")
+
     if not os.path.exists(annotation_path):
         print(f"Warning: Annotation file not found: {annotation_path}. Skipping this image.")
         return
@@ -93,11 +97,11 @@ def resize_annotation(base_name, original_width, original_height, output_dir):
         f.writelines(new_lines)
 
 
-def resize_image(input_dir, output_dir):
-    with Image.open(input_dir) as img:
+def resize_image(input_path, output_path):
+    with Image.open(input_path) as img:
         original_width, original_height = img.size
         img_resized = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT), Image.LANCZOS)  #type: ignore
-        img_resized.save(output_dir)
+        img_resized.save(output_path)
     return original_width, original_height
 
 
@@ -108,20 +112,25 @@ def preprocess():
     input_annotations_directories = input_subdirectories[1]
 
     # Create necessary Directories to store Data
-    output_image_directories, output_annotations_directories = get_subdirectories(PREPROCESSING_OUTPUT_DIR)
+    output_subdirectories = get_subdirectories(PREPROCESSING_OUTPUT_DIR)
+    output_image_directories = output_subdirectories[0]
+    output_annotations_directories = output_subdirectories[1]
     create_directories(output_image_directories + output_annotations_directories)
 
     # Format Annotations to standard YOLO txt files and move them
-    for i in range(len(input_annotations_directories)):
-        format_annotations(input_annotations_directories[i], output_annotations_directories[i])
+    for idx, input_annotation_directory in enumerate(input_annotations_directories):
+        format_annotations(input_annotations_directories[idx], output_annotations_directories[idx])
 
     # Resize every Picture and adjust annotation
-    for directory in range(len(input_image_directories)):
-        for image_path in os.listdir(Path(input_image_directories[directory])):
-            base_name = os.path.splitext(os.path.basename(image_path))[0]
+    for idx, input_image_directory in enumerate(input_image_directories):
+        for image_name in os.listdir(input_image_directories[idx]):
+            base_name = os.path.splitext(os.path.basename(image_name))[0]
 
-            original_width, original_height = resize_image(image_path, output_image_directories[directory])
-            resize_annotation(base_name, original_width, original_height, output_annotations_directories[directory])
+            image_input_path = os.path.join(input_image_directories[idx], image_name)
+            image_output_path = os.path.join(output_image_directories[idx], image_name)
+            original_width, original_height = resize_image(image_input_path, image_output_path)
+
+            resize_annotation(base_name, original_width, original_height, output_annotations_directories[idx])
 
 
 def main():

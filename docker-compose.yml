@@ -33,5 +33,6 @@ services:
     env_file:
       - .env
 
+
 volumes:
   data_volume:

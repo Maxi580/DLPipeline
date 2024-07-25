@@ -5,10 +5,10 @@ import os
 def docker_cp_to_container(local_path, container_id, container_path):
     local_path = os.path.normpath(local_path)
 
-    command_a_t = f'docker cp "{local_path}"/annotations/train {container_id}:{container_path}/annotations'
-    command_a_v = f'docker cp "{local_path}"/annotations/val {container_id}:{container_path}/annotations'
-    command_i_t = f'docker cp "{local_path}"/images/train {container_id}:{container_path}/images'
-    command_i_v = f'docker cp "{local_path}"/images/val {container_id}:{container_path}/images'
+    command_a_t = f'docker cp {local_path}/annotations/train {container_id}:{container_path}/annotations'
+    command_a_v = f'docker cp {local_path}/annotations/val {container_id}:{container_path}/annotations'
+    command_i_t = f'docker cp {local_path}/images/train {container_id}:{container_path}/images'
+    command_i_v = f'docker cp {local_path}/images/val {container_id}:{container_path}/images'
 
     try:
         subprocess.run(command_a_t, check=True, shell=True, capture_output=True, text=True)
@@ -23,8 +23,8 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "0dee0d72218ffec7300e85f4d1e3790120a5cdba044d14e4e7a82d1be2ac7fc7"
-local_path = r"C:\Users\a880902\OneDrive - Eviden\Desktop\Datasetss\LicensePlates"
+container_id = "040a1b200d4264e0e24ae40be89707adb33d0f8d08599f39fd07ab3faa3e6fec"
+local_path = r"C:/Users/maxie/Desktop/LicensePlateData"
 container_path = "/data"
 
 if __name__ == '__main__':
