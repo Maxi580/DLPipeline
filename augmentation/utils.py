@@ -33,18 +33,19 @@ def is_directory_empty(directory_path):
     try:
         return len(os.listdir(directory_path)) == 0
     except Exception as e:
-        print("Error")
         print(f"Could not check contents of directory {directory_path}: {e}")
         return True
 
 
 def check_directory_content(paths):
-    print(f"PATHS: {paths}")
     for path in paths:
         if not os.path.exists(path):
             print(f"Warning: Directory does not exist: {path}")
+            return False
         elif is_directory_empty(path):
             print(f"Warning: Directory is empty: {path}")
+            return False
+    return True
 
 
 def read_yolo_file(file_path):
@@ -71,6 +72,13 @@ def read_yolo_file(file_path):
     return np.array(bboxes), np.array(class_ids)
 
 
+def read_yolo_annotation(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    annotations = [list(map(float, line.strip().split())) for line in lines]
+    return annotations
+
+
 def save_yolo_file(directory, filename, bboxes, class_ids):
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
@@ -92,4 +100,3 @@ def load_image_set(directory_path):
             image_paths.append(image_path)
 
     return image_paths
-

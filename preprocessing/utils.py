@@ -35,7 +35,16 @@ def is_directory_empty(directory_path):
 def check_directory_content(paths):
     for path in paths:
         if not os.path.exists(path):
-            raise ValueError(f"Warning: Directory does not exist: {path}")
+            print(f"Warning: Directory does not exist: {path}")
+            return False
         elif is_directory_empty(path):
-            raise ValueError(f"Warning: Directory is empty: {path}")
+            print(f"Warning: Directory is empty: {path}")
+            return False
+    return True
 
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
