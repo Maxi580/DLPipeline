@@ -16,8 +16,9 @@ XML_PASCALVOC = 'xml-pascalvoc'
 JSON_COCO = 'json-coco'
 
 
-def detect_annotation_format(file_path):
-    file_extension = os.path.splitext(file_path)[1].lower()
+def detect_annotation_format(input_directory, file):
+    file_extension = os.path.splitext(file)[1].lower()
+    file_path = os.path.join(input_directory, file)
 
     if file_extension == '.xml':
         # Check for PascalVoc which is common for xml
@@ -34,14 +35,14 @@ def detect_annotation_format(file_path):
             pass
     elif file_extension == '.txt':
         # Check for Yolo which is common for txt
-        with open(file_path, 'r') as f:
+        with open(file, 'r') as f:
             first_line = f.readline().strip().split()
             if len(first_line) == 5 and all(is_float(val) for val in first_line):
                 return TXT_YOLO
     elif file_extension == '.json':
         # Check for Coco which is common for json files
         try:
-            with open(file_path, 'r') as f:
+            with open(file, 'r') as f:
                 data = json.load(f)
             if 'images' in data and 'annotations' in data and 'categories' in data:
                 return JSON_COCO
@@ -115,9 +116,9 @@ def preprocess_json_coco_annotation(coco_file, output_folder):
 
 def format_annotations(input_directory, output_directory):
     for annotation in os.listdir(input_directory):
-        output_file = os.path.join(output_directory, annotation)
+        output_file = os.path.join(output_directory)
 
-        annotation_format = detect_annotation_format(annotation)
+        annotation_format = detect_annotation_format(input_directory, annotation)
         if annotation_format == TXT_YOLO:
             preprocess_txt_yolo_annotation(annotation, output_file)
         elif annotation_format == XML_PASCALVOC:

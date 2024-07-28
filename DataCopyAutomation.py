@@ -23,7 +23,7 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "d64b914479ca4be5916d9dcd870ab5e6127bd398b4e5fc19351ffafa6cc40b3a"
+container_id = "e19e49272b3d1ceb5c8924d519966ecff24bffc7b16b351c98ab386db03d0dc2"
 local_path = r"C:/Users/maxie/Desktop/LicensePlateData"
 container_path = "/data"
 

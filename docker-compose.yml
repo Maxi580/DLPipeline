@@ -5,6 +5,7 @@ services:
     image: busybox
     restart: "no"
     volumes:
+      - ./.env:/tmp/.env
       - data_volume:/data
     command: >
       sh -c "
@@ -13,26 +14,54 @@ services:
               mkdir -p /data/images/train
               mkdir -p /data/images/val
               mkdir -p /data/fractals
+              cp /tmp/.env /data/.env
             "
+
+  web:
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - app-network
+    env_file:
+      - ./.env
+    volumes:
+      - data_volume:/data
+    depends_on:
+      - data_volume
+
   preprocessing:
     restart: "no"
     build:
       context: .
       dockerfile: ./preprocessing/Dockerfile
+    env_file:
+      - ./.env
     volumes:
       - data_volume:/data
-    env_file:
-      - .env
+    depends_on:
+      - data_volume
+
   augmentation:
     restart: "no"
     build:
       context: .
       dockerfile: ./augmentation/Dockerfile
+    env_file:
+      - ./.env
     volumes:
       - data_volume:/data
-    env_file:
-      - .env
-
+    depends_on:
+      - data_volume
 
 volumes:
   data_volume:
+
+networks:
+  app-network:
+    driver: bridge

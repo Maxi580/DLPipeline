@@ -9,4 +9,7 @@ COPY preprocessing .
 
 ENV PYTHONUNBUFFERED=1
 
+COPY preprocessing/load_env.sh /usr/local/bin/load_env.sh
+RUN chmod +x /usr/local/bin/load_env.sh
+ENTRYPOINT ["/usr/local/bin/load_env.sh"]
 CMD ["python", "preprocessing.py"]
