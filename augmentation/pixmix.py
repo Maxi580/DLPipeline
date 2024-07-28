@@ -8,15 +8,13 @@ HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
 
 AUGMENTATIONS = [
     A.HorizontalFlip(p=1),
-    A.VerticalFlip(p=1),
     A.Rotate(limit=45, p=1),
-    A.Affine(shear=(-20, 20), p=1),
-    A.ElasticTransform(alpha=1, sigma=50, alpha_affine=None, p=1),
-    A.GridDistortion(num_steps=5, distort_limit=0.3, p=1),
-
-    A.RandomBrightnessContrast(p=1),
-    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=10, p=1),
-    A.GaussianBlur(blur_limit=(3, 7), p=1)
+    A.RandomBrightnessContrast(brightness_limit=(0.5, 4), contrast_limit=0, p=1),
+    A.RandomBrightnessContrast(brightness_limit=0, contrast_limit=(0.5, 2.5), p=1),
+    A.HueSaturationValue(sat_shift_limit=(1, 2), hue_shift_limit=0, val_shift_limit=0, p=1),
+    A.GaussNoise(var_limit=(0, 25 ** 2), mean=0, p=1),
+    A.GaussianBlur(blur_limit=(1, 3), p=1),
+    A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=1)
 ]
 
 
