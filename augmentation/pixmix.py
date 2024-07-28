@@ -1,26 +1,22 @@
 import random
-
 from utils import *
-import imgaug.augmenters as iaa
-from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
+import albumentations as A
 
 FRACTAL_PATH = os.getenv('FRACTAL_PATH')
 WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
 
 AUGMENTATIONS = [
-    # Geometrical
-    iaa.Fliplr(1.0),
-    iaa.Flipud(1.0),
-    iaa.Affine(rotate=(-15, 15)),
-    iaa.Affine(shear=(-20, 20)),
+    A.HorizontalFlip(p=1),
+    A.VerticalFlip(p=1),
+    A.Rotate(limit=45, p=1),
+    A.Affine(shear=(-20, 20), p=1),
+    A.ElasticTransform(alpha=1, sigma=50, alpha_affine=None, p=1),
+    A.GridDistortion(num_steps=5, distort_limit=0.3, p=1),
 
-    # Graphical
-    iaa.AddToSaturation((-10, 10)),
-    iaa.LinearContrast((0.6, 1.4)),
-    iaa.AddToHue((-10, 10)),
-    iaa.AddToBrightness((-30, 30)),
-    iaa.GaussianBlur(sigma=(0, 5.0)),
+    A.RandomBrightnessContrast(p=1),
+    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=10, p=1),
+    A.GaussianBlur(blur_limit=(3, 7), p=1)
 ]
 
 
@@ -37,39 +33,18 @@ def mix_images(image, fractal, alpha=0.5):
 def random_augmentation(image, annotations):
     image_np = np.array(image)
 
-    # Convert YOLO annotations to imgaug format
-    bbs = BoundingBoxesOnImage([
-        BoundingBox(x1=(ann[1] - ann[3]/2) * image.width,
-                    y1=(ann[2] - ann[4]/2) * image.height,
-                    x2=(ann[1] + ann[3]/2) * image.width,
-                    y2=(ann[2] + ann[4]/2) * image.height,
-                    label=ann[0])
-        for ann in annotations
-    ], shape=image_np.shape)
+    bboxes = [[ann[1], ann[2], ann[3], ann[4]] for ann in annotations]
+    class_labels = [ann[0] for ann in annotations]
 
     aug = random.choice(AUGMENTATIONS)
-    image_aug, bbs_aug = aug(image=image_np, bounding_boxes=bbs)
+    aug_with_bbox = A.Compose([aug], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
 
-    # Get dimensions of augmented image
-    aug_height, aug_width = image_aug.shape[:2]
+    augmented = aug_with_bbox(image=image_np, bboxes=bboxes, class_labels=class_labels)
+    image_aug = augmented['image']
+    bboxes_aug = augmented['bboxes']
+    labels_aug = augmented['class_labels']
 
-    # Convert back to YOLO format
-    aug_annotations = []
-    for bb in bbs_aug.bounding_boxes:
-        x_center = (bb.x1 + bb.x2) / (2 * aug_width)
-        y_center = (bb.y1 + bb.y2) / (2 * aug_height)
-        width = (bb.x2 - bb.x1) / aug_width
-        height = (bb.y2 - bb.y1) / aug_height
-
-        x_center = max(0, min(1, x_center))
-        y_center = max(0, min(1, y_center))
-        width = max(0, min(1, width))
-        height = max(0, min(1, height))
-
-        if 0 <= x_center <= 1 and 0 <= y_center <= 1 and 0 < width <= 1 and 0 < height <= 1:
-            aug_annotations.append([bb.label, x_center, y_center, width, height])
-        else:
-            print(f"Warning: Invalid bounding box detected and removed: {[bb.label, x_center, y_center, width, height]}")
+    aug_annotations = [[label] + list(bbox) for label, bbox in zip(labels_aug, bboxes_aug)]
 
     return Image.fromarray(image_aug), aug_annotations
 
