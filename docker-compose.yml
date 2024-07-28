@@ -1,11 +1,23 @@
 version: '3'
 
 services:
+  env_manager:
+    image: busybox
+    volumes:
+      - ./.env:/tmp/.env
+      - env_data:/env_data
+    command: >
+      sh -c "
+        if [ ! -f /env_data/.env ]; then
+          cp /tmp/.env /env_data/.env
+        fi
+        tail -f /dev/null
+      "
+
   data_volume:
     image: busybox
     restart: "no"
     volumes:
-      - ./.env:/tmp/.env
       - data_volume:/data
     command: >
       sh -c "
@@ -14,7 +26,6 @@ services:
               mkdir -p /data/images/train
               mkdir -p /data/images/val
               mkdir -p /data/fractals
-              cp /tmp/.env /data/.env
             "
 
   web:
@@ -28,42 +39,46 @@ services:
       - FLASK_ENV=development
     networks:
       - app-network
-    env_file:
-      - ./.env
     volumes:
       - data_volume:/data
+      - env_data:/env_data
       - ./app:/app #Dev
+    env_file:
+      - ./.env
     depends_on:
-      - data_volume
+      - env_manager
 
   preprocessing:
     restart: "no"
     build:
       context: .
       dockerfile: ./preprocessing/Dockerfile
-    env_file:
-      - ./.env
     volumes:
+      - env_data:/env_data
       - data_volume:/data
       - ./preprocessing:/preprocessing #Dev
+    env_file:
+      - ./.env
     depends_on:
-      - data_volume
+      - env_manager
 
   augmentation:
     restart: "no"
     build:
       context: .
       dockerfile: ./augmentation/Dockerfile
-    env_file:
-      - ./.env
     volumes:
+      - env_data:/env_data
       - data_volume:/data
       - ./augmentation:/augmentation #Dev
+    env_file:
+      - ./.env
     depends_on:
-      - data_volume
+      - env_manager
 
 volumes:
   data_volume:
+  env_data:
 
 networks:
   app-network:

@@ -1,10 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-# Load environment variables from /data/.env
-if [ -f /data/.env ]; then
-    export $(cat /data/.env | xargs)
-fi
-
-# Execute the main command
+source /env_data/.env
 exec "$@"
