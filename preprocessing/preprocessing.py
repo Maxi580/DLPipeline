@@ -162,11 +162,22 @@ def resize_annotation(base_name, original_width, original_height, output_dir):
         f.writelines(new_lines)
 
 
-def resize_image(input_path, output_path):
+def format_image(input_path, output_path):
+    """Resizes images and ensures RGB format, properly handling palette images with transparency"""
     with Image.open(input_path) as img:
         original_width, original_height = img.size
-        img_resized = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT), Image.LANCZOS)  #type: ignore
-        img_resized.save(output_path)
+
+        # Check if the image is a palette image with transparency
+        if img.mode == 'P' and 'transparency' in img.info:
+            # Convert to RGBA first to properly handle transparency
+            img = img.convert('RGBA')
+
+        # Now convert to RGB, which will handle the alpha channel correctly
+        img = img.convert('RGB')
+
+        img_resized = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT), Image.LANCZOS)  # Type: ignore
+        output_path = os.path.splitext(output_path)[0] + '.png'
+        img_resized.save(output_path, 'PNG')
     return original_width, original_height
 
 
@@ -193,7 +204,7 @@ def preprocess():
 
             image_input_path = os.path.join(input_image_directories[idx], image_name)
             image_output_path = os.path.join(output_image_directories[idx], image_name)
-            original_width, original_height = resize_image(image_input_path, image_output_path)
+            original_width, original_height = format_image(image_input_path, image_output_path)
 
             resize_annotation(base_name, original_width, original_height, output_annotations_directories[idx])
 

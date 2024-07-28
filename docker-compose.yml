@@ -32,6 +32,7 @@ services:
       - ./.env
     volumes:
       - data_volume:/data
+      - ./app:/app #Dev
     depends_on:
       - data_volume
 
@@ -44,6 +45,7 @@ services:
       - ./.env
     volumes:
       - data_volume:/data
+      - ./preprocessing:/preprocessing #Dev
     depends_on:
       - data_volume
 
@@ -56,6 +58,7 @@ services:
       - ./.env
     volumes:
       - data_volume:/data
+      - ./augmentation:/augmentation #Dev
     depends_on:
       - data_volume
 

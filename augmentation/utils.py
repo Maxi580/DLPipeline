@@ -100,3 +100,5 @@ def load_image_set(directory_path):
             image_paths.append(image_path)
 
     return image_paths
+
+
