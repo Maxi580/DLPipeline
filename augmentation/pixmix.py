@@ -12,13 +12,14 @@ AUGMENTATIONS = [
     # Geometrical
     iaa.Fliplr(1.0),
     iaa.Flipud(1.0),
-    iaa.Affine(rotate=(-45, 45)),
+    iaa.Affine(rotate=(-15, 15)),
+    iaa.Affine(shear=(-20, 20)),
 
     # Graphical
-    iaa.AddToSaturation((-40, 40)),
-    iaa.LinearContrast((0.6, 2.4)),
-    iaa.AddToHue((-30, 30)),
-    iaa.AddToBrightness((-50, 50)),
+    iaa.AddToSaturation((-10, 10)),
+    iaa.LinearContrast((0.6, 1.4)),
+    iaa.AddToHue((-10, 10)),
+    iaa.AddToBrightness((-30, 30)),
     iaa.GaussianBlur(sigma=(0, 5.0)),
 ]
 
@@ -36,37 +37,39 @@ def mix_images(image, fractal, alpha=0.5):
 def random_augmentation(image, annotations):
     image_np = np.array(image)
 
-    if isinstance(image, Image.Image):
-        image = image.convert('RGB')
-
     # Convert YOLO annotations to imgaug format
     bbs = BoundingBoxesOnImage([
-        BoundingBox(x1=ann[1] * image.width, y1=ann[2] * image.height,
-                    x2=ann[3] * image.width, y2=ann[4] * image.height, label=ann[0])
+        BoundingBox(x1=(ann[1] - ann[3]/2) * image.width,
+                    y1=(ann[2] - ann[4]/2) * image.height,
+                    x2=(ann[1] + ann[3]/2) * image.width,
+                    y2=(ann[2] + ann[4]/2) * image.height,
+                    label=ann[0])
         for ann in annotations
     ], shape=image_np.shape)
 
     aug = random.choice(AUGMENTATIONS)
     image_aug, bbs_aug = aug(image=image_np, bounding_boxes=bbs)
 
+    # Get dimensions of augmented image
+    aug_height, aug_width = image_aug.shape[:2]
+
     # Convert back to YOLO format
     aug_annotations = []
     for bb in bbs_aug.bounding_boxes:
-        x_center = (bb.x1 / image.width + bb.x2 / image.width) / 2
-        y_center = (bb.y1 / image.height + bb.y2 / image.height) / 2
-        width = (bb.x2 - bb.x1) / image.width
-        height = (bb.y2 - bb.y1) / image.height
+        x_center = (bb.x1 + bb.x2) / (2 * aug_width)
+        y_center = (bb.y1 + bb.y2) / (2 * aug_height)
+        width = (bb.x2 - bb.x1) / aug_width
+        height = (bb.y2 - bb.y1) / aug_height
 
         x_center = max(0, min(1, x_center))
         y_center = max(0, min(1, y_center))
         width = max(0, min(1, width))
         height = max(0, min(1, height))
 
-        if 0 <= x_center <= 1 and 0 <= y_center <= 1 and 0 <= width <= 1 and 0 <= height <= 1:
+        if 0 <= x_center <= 1 and 0 <= y_center <= 1 and 0 < width <= 1 and 0 < height <= 1:
             aug_annotations.append([bb.label, x_center, y_center, width, height])
         else:
-            print(
-                f"Warning: Invalid bounding box detected and removed: {[bb.label, x_center, y_center, width, height]}")
+            print(f"Warning: Invalid bounding box detected and removed: {[bb.label, x_center, y_center, width, height]}")
 
     return Image.fromarray(image_aug), aug_annotations
 

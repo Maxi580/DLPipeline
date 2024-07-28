@@ -145,10 +145,10 @@ def resize_annotation(base_name, original_width, original_height, output_dir):
         class_id, x, y, w, h = map(float, line.strip().split())
 
         # Adjust coordinates
-        new_x = x * (original_width / IMAGE_WIDTH)
-        new_y = y * (original_height / IMAGE_HEIGHT)
-        new_w = w * (original_width / IMAGE_WIDTH)
-        new_h = h * (original_height / IMAGE_HEIGHT)
+        new_x = x * (IMAGE_WIDTH / original_width)
+        new_y = y * (IMAGE_HEIGHT / original_height)
+        new_w = w * (IMAGE_WIDTH / original_width)
+        new_h = h * (IMAGE_HEIGHT / original_height)
 
         # Ensure values are within [0, 1] range
         new_x = max(0, min(1, new_x))
@@ -177,7 +177,7 @@ def format_image(input_path, output_path):
 
         img_resized = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT), Image.LANCZOS)  # Type: ignore
         output_path = os.path.splitext(output_path)[0] + '.png'
-        img_resized.save(output_path, 'PNG')
+        img_resized.save(output_path, 'PNG', icc_profile=None)
     return original_width, original_height
 
 
