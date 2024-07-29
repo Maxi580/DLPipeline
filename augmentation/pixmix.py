@@ -5,7 +5,7 @@ import albumentations as A
 FRACTAL_PATH = os.getenv('FRACTAL_PATH')
 WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
-NUMBER_OF_AUGMENTATION_RUNS = 3
+NUMBER_OF_AUGMENTATION_RUNS = int(os.getenv('NUMBER_OF_AUGMENTATION_RUNS'))
 AUGMENTATIONS = os.getenv('AUGMENTATIONS')
 
 
