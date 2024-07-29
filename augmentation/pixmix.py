@@ -6,19 +6,7 @@ FRACTAL_PATH = os.getenv('FRACTAL_PATH')
 WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
 NUMBER_OF_AUGMENTATION_RUNS = 3
-
-AUGMENTATIONS = [
-    A.VerticalFlip(p=1),
-    A.HorizontalFlip(p=1),
-    A.Rotate(limit=45, p=1),
-    A.Rotate(limit=60, p=1),
-    A.RandomBrightnessContrast(brightness_limit=(-0.2, 0.2), contrast_limit=0, p=1),
-    A.RandomBrightnessContrast(brightness_limit=0, contrast_limit=(-0.5, 0.5), p=1),
-    A.HueSaturationValue(sat_shift_limit=(-50, 50), hue_shift_limit=0, val_shift_limit=0, p=1),
-    A.GaussNoise(var_limit=(0, 25 ** 2), mean=0, p=1),
-    A.GaussianBlur(blur_limit=(3, 7), p=1),
-    A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=1)
-]
+AUGMENTATIONS = os.getenv('AUGMENTATIONS')
 
 
 def mix_images(image, fractal, alpha=0.5):
