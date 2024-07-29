@@ -5,15 +5,18 @@ import albumentations as A
 FRACTAL_PATH = os.getenv('FRACTAL_PATH')
 WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
+NUMBER_OF_AUGMENTATION_RUNS = 3
 
 AUGMENTATIONS = [
+    A.VerticalFlip(p=1),
     A.HorizontalFlip(p=1),
     A.Rotate(limit=45, p=1),
-    A.RandomBrightnessContrast(brightness_limit=(0.5, 4), contrast_limit=0, p=1),
-    A.RandomBrightnessContrast(brightness_limit=0, contrast_limit=(0.5, 2.5), p=1),
-    A.HueSaturationValue(sat_shift_limit=(1, 2), hue_shift_limit=0, val_shift_limit=0, p=1),
+    A.Rotate(limit=60, p=1),
+    A.RandomBrightnessContrast(brightness_limit=(-0.2, 0.2), contrast_limit=0, p=1),
+    A.RandomBrightnessContrast(brightness_limit=0, contrast_limit=(-0.5, 0.5), p=1),
+    A.HueSaturationValue(sat_shift_limit=(-50, 50), hue_shift_limit=0, val_shift_limit=0, p=1),
     A.GaussNoise(var_limit=(0, 25 ** 2), mean=0, p=1),
-    A.GaussianBlur(blur_limit=(1, 3), p=1),
+    A.GaussianBlur(blur_limit=(3, 7), p=1),
     A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=1)
 ]
 
@@ -69,35 +72,38 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
 
     mixing_set = load_image_set(FRACTAL_PATH)
 
-    # Process each image in the input directory + the corresponding annotation
-    for image_filename in os.listdir(image_input_dir):
-        # Find Image
-        if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-            input_image_path = os.path.join(image_input_dir, image_filename)
+    cntr = 0
+    while cntr < NUMBER_OF_AUGMENTATION_RUNS:
+        cntr += 1
+        # Process each image in the input directory + the corresponding annotation
+        for image_filename in os.listdir(image_input_dir):
+            # Find Image
+            if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                input_image_path = os.path.join(image_input_dir, image_filename)
 
-            # Find matching Annotation
-            image_basename = os.path.splitext(os.path.basename(image_filename))[0]
-            annotation_found = False
-            for annotation_filename in os.listdir(annotation_input_dir):
-                annotation_basename = os.path.splitext(os.path.basename(annotation_filename))[0]
-                if annotation_basename == image_basename:
-                    # Open Image
-                    annotation_found = True
-                    with Image.open(input_image_path) as image:
-                        # Extract annotations from txt file
-                        annotations = read_yolo_annotation(os.path.join(annotation_input_dir, annotation_filename))
-                        augmented_img, augmented_annotations = apply_pixmix(image, annotations, mixing_set)
+                # Find matching Annotation
+                image_basename = os.path.splitext(os.path.basename(image_filename))[0]
+                annotation_found = False
+                for annotation_filename in os.listdir(annotation_input_dir):
+                    annotation_basename = os.path.splitext(os.path.basename(annotation_filename))[0]
+                    if annotation_basename == image_basename:
+                        # Open Image
+                        annotation_found = True
+                        with Image.open(input_image_path) as image:
+                            # Extract annotations from txt file
+                            annotations = read_yolo_annotation(os.path.join(annotation_input_dir, annotation_filename))
+                            augmented_img, augmented_annotations = apply_pixmix(image, annotations, mixing_set)
 
-                        output_filename = f"{image_filename}"
+                            output_image_filename = f"{cntr}{image_filename}"
+                            image_output_image_path = os.path.join(image_output_dir, output_image_filename)
+                            augmented_img.save(image_output_image_path)
 
-                        image_output_image_path = os.path.join(image_output_dir, output_filename)
-                        augmented_img.save(image_output_image_path)
+                            output_annotation_filename = f"{cntr}{annotation_filename}"
+                            annotation_output_path = os.path.join(annotation_output_dir, output_annotation_filename)
+                            with open(annotation_output_path, 'w') as f:
+                                for ann in augmented_annotations:
+                                    f.write(' '.join(map(str, ann)) + '\n')
 
-                        annotation_output_path = os.path.join(annotation_output_dir, annotation_filename)
-                        with open(annotation_output_path, 'w') as f:
-                            for ann in augmented_annotations:
-                                f.write(' '.join(map(str, ann)) + '\n')
-
-                        break
-            if not annotation_found:
-                print(f"Warning Annotation for {image_filename} not found")
+                            break
+                if not annotation_found:
+                    print(f"Warning Annotation for {image_filename} not found")

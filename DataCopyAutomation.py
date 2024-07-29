@@ -5,8 +5,8 @@ import os
 def docker_cp_to_container(local_path, container_id, container_path):
     local_path = os.path.normpath(local_path)
 
-    command_a_t = f'docker cp {local_path}/annotations/train {container_id}:{container_path}/annotations'
-    command_a_v = f'docker cp {local_path}/annotations/val {container_id}:{container_path}/annotations'
+    command_a_t = f'docker cp {local_path}/annotations/train {container_id}:{container_path}/labels'
+    command_a_v = f'docker cp {local_path}/annotations/val {container_id}:{container_path}/labels'
     command_i_t = f'docker cp {local_path}/images/train {container_id}:{container_path}/images'
     command_i_v = f'docker cp {local_path}/images/val {container_id}:{container_path}/images'
 
@@ -23,7 +23,7 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "eabfefe9cd2037da77a725409aec6d79fbb891c833d04562cf844518261104f8"
+container_id = "a0e9f98b9d753d68cad4eb36799e2d2d18546be1e1b74d247ba94686d98eff36"
 local_path = r"C:\Users\maxie\Desktop\FruitData"
 container_path = "/data"
 

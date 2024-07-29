@@ -5,7 +5,7 @@ from PIL import Image
 TRAIN_PATH = os.getenv('TRAIN_PATH')
 VAL_PATH = os.getenv('VAL_PATH')
 IMAGES_PATH = os.getenv('IMAGES_PATH')
-ANNOTATION_PATH = os.getenv('ANNOTATION_PATH')
+LABEL_PATH = os.getenv('LABEL_PATH')
 
 WIDTH = os.getenv('WIDTH')
 HEIGHT = os.getenv('HEIGHT')
@@ -25,7 +25,7 @@ def get_subdirectories(directory):
     annotation_subdirectories = []
     for split_sub_directory in DATA_SPLIT_DIRECTORY:
         image_subdirectories.append(os.path.join(directory, IMAGES_PATH, split_sub_directory))
-        annotation_subdirectories.append(os.path.join(directory, ANNOTATION_PATH, split_sub_directory))
+        annotation_subdirectories.append(os.path.join(directory, LABEL_PATH, split_sub_directory))
     return image_subdirectories, annotation_subdirectories
 
 

@@ -3,9 +3,11 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 from PIL import Image
 from utils import *
+from collections import defaultdict
 
 INPUT_DATA_DIR = os.getenv('INPUT_DATA_DIR')
 PREPROCESSING_OUTPUT_DIR = os.getenv('PREPROCESSING_OUTPUT_DIR')
+MAPPING_FILE = os.getenv('MAPPING_FILE')
 
 IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
 IMAGE_HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
@@ -33,7 +35,7 @@ def detect_annotation_format(input_directory, file):
                             return XML_PASCALVOC
         except ET.ParseError:
             pass
-    elif file_extension == '.txt':
+    """elif file_extension == '.txt':
         # Check for Yolo which is common for txt
         with open(file, 'r') as f:
             first_line = f.readline().strip().split()
@@ -47,20 +49,20 @@ def detect_annotation_format(input_directory, file):
             if 'images' in data and 'annotations' in data and 'categories' in data:
                 return JSON_COCO
         except json.JSONDecodeError:
-            pass
+            pass"""
 
 
-def preprocess_txt_yolo_annotation(input_file, output_file):
+"""def preprocess_txt_yolo_annotation(input_file, output_file):
     try:
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             for line in infile:
                 outfile.write(line)
     except Exception as e:
-        print(f"An unexpected error occurred while copying txt annotations: {e}")
+        print(f"An unexpected error occurred while copying txt annotations: {e}")"""
 
 
-def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file):
+def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class_mapping):
     """ XML Files have PascalVOC Format, which we will transform to =>
         YOLO: <class_id> <x_center> <y_center> <width> <height>"""
     tree = ET.parse(os.path.join(xml_folder, xml_file))
@@ -72,7 +74,11 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file):
     with open(output_file, 'w') as yolo_file:
         for obj in root.findall('object'):
             class_name = obj.find('name').text
-            class_id = CLASSES.index(class_name)
+            class_mapping = create_or_load_class_mapping(MAPPING_FILE)
+
+            if class_name not in class_mapping:
+                class_mapping[class_name] = len(class_mapping)
+            class_id = class_mapping[class_name]
 
             bbox = obj.find('bndbox')
             x_min = int(bbox.find('xmin').text)
@@ -86,9 +92,10 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file):
             height = (y_max - y_min) / IMAGE_HEIGHT
 
             yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
+    return class_mapping
 
 
-def preprocess_json_coco_annotation(coco_file, output_folder):
+"""def preprocess_json_coco_annotation(coco_file, output_folder):
     with open(coco_file, 'r') as f:
         coco_data = json.load(f)
 
@@ -111,7 +118,7 @@ def preprocess_json_coco_annotation(coco_file, output_folder):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         with open(output_file, 'a') as yolo_file:
-            yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
+            yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")"""
 
 
 def format_annotations(input_directory, output_directory):
@@ -119,14 +126,17 @@ def format_annotations(input_directory, output_directory):
         output_file = os.path.join(output_directory)
 
         annotation_format = detect_annotation_format(input_directory, annotation)
-        if annotation_format == TXT_YOLO:
-            preprocess_txt_yolo_annotation(annotation, output_file)
-        elif annotation_format == XML_PASCALVOC:
-            preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file)
-        elif annotation_format == JSON_COCO:
-            preprocess_json_coco_annotation(annotation, output_directory)
+        class_mapping = create_or_load_class_mapping(MAPPING_FILE)
+        """if annotation_format == TXT_YOLO:
+            preprocess_txt_yolo_annotation(annotation, output_file)"""
+        if annotation_format == XML_PASCALVOC:
+            class_mapping = preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file, class_mapping)
+            save_class_mapping(MAPPING_FILE, class_mapping)
         else:
             raise ValueError(f"Unexpected annotation format: {annotation}")
+        """elif annotation_format == JSON_COCO:
+            preprocess_json_coco_annotation(annotation, output_directory)"""
+
 
 
 def resize_annotation(base_name, original_width, original_height, output_dir):

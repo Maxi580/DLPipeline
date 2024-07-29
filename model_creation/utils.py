@@ -1,7 +1,5 @@
 import os
 
-import yaml
-
 TRAIN_PATH = os.getenv('TRAIN_PATH')
 VAL_PATH = os.getenv('VAL_PATH')
 IMAGES_PATH = os.getenv('IMAGES_PATH')
@@ -9,10 +7,9 @@ LABEL_PATH = os.getenv('LABEL_PATH')
 DATA_SPLIT_DIRECTORY = [TRAIN_PATH, VAL_PATH]
 
 
-def create_directories(directories):
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
+def create_directory(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
 
 
 def get_subdirectories(directory):
@@ -42,25 +39,3 @@ def check_directory_content(paths):
             print(f"Warning: Directory is empty: {path}")
             return False
     return True
-
-
-def is_float(value):
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
-
-
-def create_or_load_class_mapping(mapping_file):
-    if os.path.exists(mapping_file):
-        with open(mapping_file, 'r') as f:
-            mapping = yaml.safe_load(f)
-            return {v: int(k) for k, v in mapping.items()}
-    return {}
-
-
-def save_class_mapping(mapping_file, class_mapping):
-    yaml_mapping = {str(class_id): class_name for class_name, class_id in class_mapping.items()}
-    with open(mapping_file, 'w') as f:
-        yaml.safe_dump(yaml_mapping, f, default_flow_style=False)

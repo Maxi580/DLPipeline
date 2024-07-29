@@ -14,24 +14,45 @@
             <h2>Neural Network Configuration</h2>
 
             <div class="form-group">
-                <label for="CREATE_YOLO_MODEL">Create Yolo Model:</label>
-                <select id="CREATE_YOLO_MODEL" name="CREATE_YOLO_MODEL">
-                    <option value="TRUE">True</option>
-                    <option value="NO">No</option>
+                <label for="WITHOUT_AUGMENTATION">Create Model Without Augmentation:</label>
+                <select id="WITHOUT_AUGMENTATION" name="WITHOUT_AUGMENTATION">
+                    <option value="TRUE">Yes</option>
+                    <option value="FALSE">No</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="PIXMIX_AUGMENTATION">Pixmix Augmentation:</label>
                 <select id="PIXMIX_AUGMENTATION" name="PIXMIX_AUGMENTATION">
-                    <option value="TRUE">True</option>
-                    <option value="NO">No</option>
+                    <option value="TRUE">Yes</option>
+                    <option value="FALSE">No</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="CLASSES">Custom Classes:</label>
-                <input type="text" id="CLASSES" name="CLASSES" placeholder="e.g.: license-plate, car, ...">
+                <label for="CREATE_YOLO_MODEL">Create Yolo Model:</label>
+                <select id="CREATE_YOLO_MODEL" name="CREATE_YOLO_MODEL">
+                    <option value="TRUE">Yes</option>
+                    <option value="FALSE">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="NUMBER_OF_AUGMENTATION_RUNS">Number of Augmentation Runs:</label>
+                <input type="number" id="NUMBER_OF_AUGMENTATION_RUNS" name="NUMBER_OF_AUGMENTATION_RUNS"
+                       min="0" max="1000" step="1" value="3">
+            </div>
+
+            <div class="form-group">
+                <label for="EPOCHS">Epochs:</label>
+                <input type="number" id="EPOCHS" name="EPOCHS"
+                       min="0" max="1000" step="1" value="20">
+            </div>
+
+            <div class="form-group">
+                <label for="BATCH_SIZE">Batch Size:</label>
+                <input type="number" id="BATCH_SIZE" name="BATCH_SIZE"
+                       min="0" max="1000" step="1" value="16">
             </div>
 
             <button type="submit">Save Configuration!</button>

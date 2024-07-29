@@ -21,8 +21,8 @@ services:
       - data_volume:/data
     command: >
       sh -c "
-              mkdir -p /data/annotations/train
-              mkdir -p /data/annotations/val
+              mkdir -p /data/labels/train
+              mkdir -p /data/labels/val
               mkdir -p /data/images/train
               mkdir -p /data/images/val
               mkdir -p /data/fractals
@@ -71,6 +71,20 @@ services:
       - env_data:/env_data
       - data_volume:/data
       - ./augmentation:/augmentation #Dev
+    env_file:
+      - ./.env
+    depends_on:
+      - env_manager
+
+  model-creation:
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./model_creation/Dockerfile
+    volumes:
+      - env_data:/env_data
+      - data_volume:/data
+      - ./model_creation:/model_creation #Dev
     env_file:
       - ./.env
     depends_on:
