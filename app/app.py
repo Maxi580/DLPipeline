@@ -11,17 +11,17 @@ def config_page():
     if request.method == 'POST':
         config = {
             'PIXMIX_AUGMENTATION': request.form['PIXMIX_AUGMENTATION'],
-            'WITHOUT_AUGMENTATION': request.form['PIXMIX_AUGMENTATION'],
+            'PIXMIX_AUGMENTATION_PROBABILITY': request.form['PIXMIX_AUGMENTATION_PROBABILITY'],
+            'PIXMIX_MIXING_PROBABILITY': request.form['PIXMIX_MIXING_PROBABILITY'],
+            'MODEL_WITHOUT_AUGMENTATION': request.form['MODEL_WITHOUT_AUGMENTATION'],
             'CREATE_YOLO_MODEL': request.form['CREATE_YOLO_MODEL'],
-            'NUMBER_OF_AUGMENTATION_RUNS': request.form['NUMBER_OF_AUGMENTATION_RUNS'],
+            'NUMBER_OF_AUGMENTED_IMAGES': request.form['NUMBER_OF_AUGMENTED_IMAGES'],
             'AUGMENTATIONS': request.form['AUGMENTATIONS'],
             'EPOCHS': request.form['EPOCHS'],
             'BATCH_SIZE': request.form['BATCH_SIZE'],
         }
-
         env_path = os.path.join(ENV_PATH)
 
-        # Read existing content
         existing_config = {}
         if os.path.exists(env_path):
             with open(env_path, 'r') as f:
@@ -30,10 +30,8 @@ def config_page():
                         key, value = line.strip().split('=', 1)
                         existing_config[key] = value
 
-        # Update with new values
         existing_config.update(config)
 
-        # Write updated content back to file
         with open(env_path, 'w') as f:
             for key, value in existing_config.items():
                 f.write(f"{key}={value}\n")

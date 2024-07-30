@@ -5,8 +5,10 @@ import albumentations as A
 FRACTAL_PATH = os.getenv('FRACTAL_PATH')
 WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
-NUMBER_OF_AUGMENTATION_RUNS = int(os.getenv('NUMBER_OF_AUGMENTATION_RUNS'))
+NUMBER_OF_AUGMENTED_IMAGES = int(os.getenv('NUMBER_OF_AUGMENTED_IMAGES'))
 AUGMENTATIONS = os.getenv('AUGMENTATIONS')
+PIXMIX_AUGMENTATION_PROBABILITY = int(os.getenv('PIXMIX_AUGMENTATION_PROBABILITY'))
+PIXMIX_MIXING_PROBABILITY = int(os.getenv('PIXMIX_MIXING_PROBABILITY'))
 
 
 def mix_images(image, fractal, alpha=0.5):
@@ -38,13 +40,13 @@ def random_augmentation(image, annotations):
     return Image.fromarray(image_aug), aug_annotations
 
 
-def apply_pixmix(image, annotation, mixing_set, p_aug=0.6, p_mix=0.3):
+def apply_pixmix(image, annotation, mixing_set):
     # Apply random augmentation
-    if random.random() < p_aug:
+    if random.random() < PIXMIX_AUGMENTATION_PROBABILITY:
         image, annotation = random_augmentation(image, annotation)
 
     # Mix with a random image from the mixing set
-    if random.random() < p_mix:
+    if random.random() < PIXMIX_MIXING_PROBABILITY:
         mixing_pic_path = random.choice(mixing_set)
         mixing_pic = Image.open(mixing_pic_path)
         alpha = random.uniform(0.2, 0.4)
@@ -61,11 +63,10 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
     mixing_set = load_image_set(FRACTAL_PATH)
 
     cntr = 0
-    while cntr < NUMBER_OF_AUGMENTATION_RUNS:
-        cntr += 1
-        # Process each image in the input directory + the corresponding annotation
-        for image_filename in os.listdir(image_input_dir):
-            # Find Image
+    # Process each image in the input directory + the corresponding annotation
+    for image_filename in os.listdir(image_input_dir):
+        # Find Image
+        while cntr <= NUMBER_OF_AUGMENTED_IMAGES:
             if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
                 input_image_path = os.path.join(image_input_dir, image_filename)
 
@@ -75,7 +76,6 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
                 for annotation_filename in os.listdir(annotation_input_dir):
                     annotation_basename = os.path.splitext(os.path.basename(annotation_filename))[0]
                     if annotation_basename == image_basename:
-                        # Open Image
                         annotation_found = True
                         with Image.open(input_image_path) as image:
                             # Extract annotations from txt file
@@ -91,7 +91,7 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
                             with open(annotation_output_path, 'w') as f:
                                 for ann in augmented_annotations:
                                     f.write(' '.join(map(str, ann)) + '\n')
-
+                            cntr += 1
                             break
                 if not annotation_found:
                     print(f"Warning Annotation for {image_filename} not found")

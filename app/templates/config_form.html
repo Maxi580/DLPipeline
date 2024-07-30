@@ -14,22 +14,6 @@
             <h2>Neural Network Configuration</h2>
 
             <div class="form-group">
-                <label for="WITHOUT_AUGMENTATION">Create Model Without Augmentation:</label>
-                <select id="WITHOUT_AUGMENTATION" name="WITHOUT_AUGMENTATION">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_AUGMENTATION">Pixmix Augmentation:</label>
-                <select id="PIXMIX_AUGMENTATION" name="PIXMIX_AUGMENTATION">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
                 <label for="CREATE_YOLO_MODEL">Create Yolo Model:</label>
                 <select id="CREATE_YOLO_MODEL" name="CREATE_YOLO_MODEL">
                     <option value="TRUE">Yes</option>
@@ -38,9 +22,37 @@
             </div>
 
             <div class="form-group">
-                <label for="NUMBER_OF_AUGMENTATION_RUNS">Number of Augmentation Runs:</label>
-                <input type="number" id="NUMBER_OF_AUGMENTATION_RUNS" name="NUMBER_OF_AUGMENTATION_RUNS"
-                       min="0" max="1000" step="1" value="3">
+                <label for="MODEL_WITHOUT_AUGMENTATION">Create Model Without Augmentation:</label>
+                <select id="MODEL_WITHOUT_AUGMENTATION" name="MODEL_WITHOUT_AUGMENTATION">
+                    <option value="TRUE">Yes</option>
+                    <option value="FALSE">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PIXMIX_AUGMENTATION">Create Model using Pixmix Augmentation:</label>
+                <select id="PIXMIX_AUGMENTATION" name="PIXMIX_AUGMENTATION">
+                    <option value="TRUE">Yes</option>
+                    <option value="FALSE">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="PIXMIX_AUGMENTATION_PROBABILITY">Pixmix Augmentation Probability::</label>
+                <input type="number" id="PIXMIX_AUGMENTATION_PROBABILITY" name="PIXMIX_AUGMENTATION_PROBABILITY"
+                       min="0" max="1" step="0.01" value="0.5">
+            </div>
+
+            <div class="form-group">
+                <label for="PIXMIX_MIXING_PROBABILITY">Pixmix Mixing Probability::</label>
+                <input type="number" id="PIXMIX_MIXING_PROBABILITY" name="PIXMIX_MIXING_PROBABILITY"
+                       min="0" max="1" step="0.01" value="0.5">
+            </div>
+
+            <div class="form-group">
+                <label for="NUMBER_OF_AUGMENTED_IMAGES">Number of Augmented Images:</label>
+                <input type="number" id="NUMBER_OF_AUGMENTED_IMAGES" name="NUMBER_OF_AUGMENTED_IMAGES"
+                       min="0" max="1000" step="1" value="200">
             </div>
 
             <div class="form-group">

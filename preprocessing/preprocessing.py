@@ -35,7 +35,7 @@ def detect_annotation_format(input_directory, file):
                             return XML_PASCALVOC
         except ET.ParseError:
             pass
-    """elif file_extension == '.txt':
+    elif file_extension == '.txt':
         # Check for Yolo which is common for txt
         with open(file, 'r') as f:
             first_line = f.readline().strip().split()
@@ -49,17 +49,17 @@ def detect_annotation_format(input_directory, file):
             if 'images' in data and 'annotations' in data and 'categories' in data:
                 return JSON_COCO
         except json.JSONDecodeError:
-            pass"""
+            pass
 
 
-"""def preprocess_txt_yolo_annotation(input_file, output_file):
+def preprocess_txt_yolo_annotation(input_file, output_file):
     try:
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             for line in infile:
                 outfile.write(line)
     except Exception as e:
-        print(f"An unexpected error occurred while copying txt annotations: {e}")"""
+        print(f"An unexpected error occurred while copying txt annotations: {e}")
 
 
 def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class_mapping):
@@ -95,7 +95,7 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
     return class_mapping
 
 
-"""def preprocess_json_coco_annotation(coco_file, output_folder):
+def preprocess_json_coco_annotation(coco_file, output_folder):
     with open(coco_file, 'r') as f:
         coco_data = json.load(f)
 
@@ -118,7 +118,7 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         with open(output_file, 'a') as yolo_file:
-            yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")"""
+            yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
 
 
 def format_annotations(input_directory, output_directory):
@@ -127,16 +127,15 @@ def format_annotations(input_directory, output_directory):
 
         annotation_format = detect_annotation_format(input_directory, annotation)
         class_mapping = create_or_load_class_mapping(MAPPING_FILE)
-        """if annotation_format == TXT_YOLO:
-            preprocess_txt_yolo_annotation(annotation, output_file)"""
-        if annotation_format == XML_PASCALVOC:
+        if annotation_format == TXT_YOLO:
+            preprocess_txt_yolo_annotation(annotation, output_file)
+        elif annotation_format == XML_PASCALVOC:
             class_mapping = preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
+        elif annotation_format == JSON_COCO:
+            preprocess_json_coco_annotation(annotation, output_directory)
         else:
             raise ValueError(f"Unexpected annotation format: {annotation}")
-        """elif annotation_format == JSON_COCO:
-            preprocess_json_coco_annotation(annotation, output_directory)"""
-
 
 
 def resize_annotation(base_name, original_width, original_height, output_dir):
@@ -172,22 +171,34 @@ def resize_annotation(base_name, original_width, original_height, output_dir):
         f.writelines(new_lines)
 
 
-def format_image(input_path, output_path):
-    """Resizes images and ensures RGB format, properly handling palette images with transparency"""
+def resize_image(input_path, output_path):
+    """Converts every picture to RGB and then resizes it"""
     with Image.open(input_path) as img:
         original_width, original_height = img.size
 
-        # Check if the image is a palette image with transparency
-        if img.mode == 'P' and 'transparency' in img.info:
-            # Convert to RGBA first to properly handle transparency
+        if img.format == 'TIFF':
+            if img.mode == 'CMYK':
+                img = img.convert('RGB')
+            elif img.mode not in ['RGB', 'RGBA']:
+                img = img.convert('RGB')
+
+        elif img.mode == 'P' and 'transparency' in img.info:
             img = img.convert('RGBA')
 
-        # Now convert to RGB, which will handle the alpha channel correctly
-        img = img.convert('RGB')
+        if img.mode not in ['RGB', 'RGBA']:
+            img = img.convert('RGB')
 
         img_resized = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT), Image.LANCZOS)  # Type: ignore
-        output_path = os.path.splitext(output_path)[0] + '.png'
-        img_resized.save(output_path, 'PNG', icc_profile=None)
+
+        output_format = os.path.splitext(output_path)[1].lower()
+        if output_format in ['.jpg', '.jpeg']:
+            img_resized = img_resized.convert('RGB')
+            img_resized.save(output_path, 'JPEG')
+        elif output_format == '.tiff':
+            img_resized.save(output_path, 'TIFF')
+        else:
+            img_resized.save(output_path)
+
     return original_width, original_height
 
 
@@ -214,7 +225,7 @@ def preprocess():
 
             image_input_path = os.path.join(input_image_directories[idx], image_name)
             image_output_path = os.path.join(output_image_directories[idx], image_name)
-            original_width, original_height = format_image(image_input_path, image_output_path)
+            original_width, original_height = resize_image(image_input_path, image_output_path)
 
             resize_annotation(base_name, original_width, original_height, output_annotations_directories[idx])
 
