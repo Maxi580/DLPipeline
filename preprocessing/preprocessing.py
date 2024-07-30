@@ -185,9 +185,7 @@ def resize_image(input_path, output_path):
 
         elif img.mode == 'P' and 'transparency' in img.info:
             img = img.convert('RGBA')
-
-        if img.mode not in ['RGB', 'RGBA']:
-            img = img.convert('RGB')
+        img = img.convert('RGB')
 
         img_resized = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT), Image.LANCZOS)  # Type: ignore
 

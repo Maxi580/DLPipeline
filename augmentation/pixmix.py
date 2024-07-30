@@ -10,16 +10,15 @@ PIXMIX_AUGMENTATION_PROBABILITY = float(os.getenv('PIXMIX_AUGMENTATION_PROBABILI
 PIXMIX_MIXING_PROBABILITY = float(os.getenv('PIXMIX_MIXING_PROBABILITY'))
 
 AUGMENTATIONS = [
-    A.VerticalFlip(p=1),
-    A.HorizontalFlip(p=1),
-    A.Rotate(limit=45, p=1),
-    A.Rotate(limit=60, p=1),
-    A.RandomBrightnessContrast(brightness_limit=(-0.2, 0.2), contrast_limit=0, p=1),
-    A.RandomBrightnessContrast(brightness_limit=0, contrast_limit=(-0.5, 0.5), p=1),
-    A.HueSaturationValue(sat_shift_limit=(-50, 50), hue_shift_limit=0, val_shift_limit=0, p=1),
-    A.GaussNoise(var_limit=(0, 25 ** 2), mean=0, p=1),
-    A.GaussianBlur(blur_limit=(3, 7), p=1),
-    A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=1)
+    # Geometrical transformations
+    A.HorizontalFlip(p=1.0),
+    A.VerticalFlip(p=1.0),
+    A.Rotate(limit=45, p=1.0),
+
+    # Color transformations
+    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=0, p=1.0),
+    A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0),
+    A.GaussianBlur(blur_limit=(3, 7), p=1.0),
 ]
 
 

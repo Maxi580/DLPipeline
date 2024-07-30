@@ -23,8 +23,8 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "a0e9f98b9d753d68cad4eb36799e2d2d18546be1e1b74d247ba94686d98eff36"
-local_path = r"C:\Users\maxie\Desktop\FruitData"
+container_id = "c45698299bc93caa46b00533c8b000b8d469018d89d59d67f17771919c9d60ef"
+local_path = r"C:\Users\maxie\Desktop\ShipDetection"
 container_path = "/data"
 
 if __name__ == '__main__':
