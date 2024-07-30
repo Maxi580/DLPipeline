@@ -28,6 +28,17 @@ services:
               mkdir -p /data/fractals
             "
 
+  inference:
+    image: busybox
+    restart: "no"
+    volumes:
+      - inference:/inference
+    command: >
+      sh -c "
+              mkdir -p /model
+              mkdir -p /input_images
+              mkdir -p /output_images
+            "
   web:
     restart: "no"
     build:
@@ -82,8 +93,7 @@ services:
       context: .
       dockerfile: ./model_creation/Dockerfile
     volumes:
-      - env_data:/env_data
-      - data_volume:/data
+      - inference:/inference
       - ./model_creation:/model_creation #Dev
     env_file:
       - ./.env

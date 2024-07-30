@@ -72,16 +72,6 @@ def create_yolo_model(input_path, data_yaml_path, name):
         batch=BATCH_SIZE,
         project=MODEL_OUTPUT_DIR,
         name=name,
-        save_best=True
     )
-
-    metrics = {}
-    for metric in ['metrics/precision', 'metrics/recall', 'metrics/mAP50', 'metrics/mAP50-95']:
-        if metric in results.results_dict:
-            metrics[metric] = results.results_dict[metric]
-
-    results_path = os.path.join(MODEL_OUTPUT_DIR, f"{name}.yaml")
-    with open(results_path, 'w') as f:
-        yaml.safe_dump(metrics, f, indent=4)
 
     return model, results

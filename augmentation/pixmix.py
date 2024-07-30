@@ -75,34 +75,37 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
 
     cntr = 0
     # Process each image in the input directory + the corresponding annotation
-    for image_filename in os.listdir(image_input_dir):
-        # Find Image
-        while cntr <= NUMBER_OF_AUGMENTED_IMAGES:
-            if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                input_image_path = os.path.join(image_input_dir, image_filename)
+    while cntr <= NUMBER_OF_AUGMENTED_IMAGES:
+        for image_filename in os.listdir(image_input_dir):
+            # Find Image
+            if cntr <= NUMBER_OF_AUGMENTED_IMAGES:
+                if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                    input_image_path = os.path.join(image_input_dir, image_filename)
 
-                # Find matching Annotation
-                image_basename = os.path.splitext(os.path.basename(image_filename))[0]
-                annotation_found = False
-                for annotation_filename in os.listdir(annotation_input_dir):
-                    annotation_basename = os.path.splitext(os.path.basename(annotation_filename))[0]
-                    if annotation_basename == image_basename:
-                        annotation_found = True
-                        with Image.open(input_image_path) as image:
-                            # Extract annotations from txt file
-                            annotations = read_yolo_annotation(os.path.join(annotation_input_dir, annotation_filename))
-                            augmented_img, augmented_annotations = apply_pixmix(image, annotations, mixing_set)
+                    # Find matching Annotation
+                    image_basename = os.path.splitext(os.path.basename(image_filename))[0]
+                    annotation_found = False
+                    for annotation_filename in os.listdir(annotation_input_dir):
+                        annotation_basename = os.path.splitext(os.path.basename(annotation_filename))[0]
+                        if annotation_basename == image_basename:
+                            annotation_found = True
+                            with Image.open(input_image_path) as image:
+                                # Extract annotations from txt file
+                                annotations = read_yolo_annotation(os.path.join(annotation_input_dir, annotation_filename))
+                                augmented_img, augmented_annotations = apply_pixmix(image, annotations, mixing_set)
 
-                            output_image_filename = f"{cntr}{image_filename}"
-                            image_output_image_path = os.path.join(image_output_dir, output_image_filename)
-                            augmented_img.save(image_output_image_path)
+                                output_image_filename = f"{cntr}{image_filename}"
+                                image_output_image_path = os.path.join(image_output_dir, output_image_filename)
+                                augmented_img.save(image_output_image_path)
 
-                            output_annotation_filename = f"{cntr}{annotation_filename}"
-                            annotation_output_path = os.path.join(annotation_output_dir, output_annotation_filename)
-                            with open(annotation_output_path, 'w') as f:
-                                for ann in augmented_annotations:
-                                    f.write(' '.join(map(str, ann)) + '\n')
-                            cntr += 1
-                            break
-                if not annotation_found:
-                    print(f"Warning Annotation for {image_filename} not found")
+                                output_annotation_filename = f"{cntr}{annotation_filename}"
+                                annotation_output_path = os.path.join(annotation_output_dir, output_annotation_filename)
+                                with open(annotation_output_path, 'w') as f:
+                                    for ann in augmented_annotations:
+                                        f.write(' '.join(map(str, ann)) + '\n')
+                                cntr += 1
+                                break
+                    if not annotation_found:
+                        print(f"Warning Annotation for {image_filename} not found")
+            else:
+                break
