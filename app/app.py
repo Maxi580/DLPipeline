@@ -16,7 +16,6 @@ def config_page():
             'MODEL_WITHOUT_AUGMENTATION': request.form['MODEL_WITHOUT_AUGMENTATION'],
             'CREATE_YOLO_MODEL': request.form['CREATE_YOLO_MODEL'],
             'NUMBER_OF_AUGMENTED_IMAGES': request.form['NUMBER_OF_AUGMENTED_IMAGES'],
-            'AUGMENTATIONS': request.form['AUGMENTATIONS'],
             'EPOCHS': request.form['EPOCHS'],
             'BATCH_SIZE': request.form['BATCH_SIZE'],
         }

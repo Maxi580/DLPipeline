@@ -36,11 +36,12 @@ def detect_annotation_format(input_directory, file):
         except ET.ParseError:
             pass
     elif file_extension == '.txt':
-        # Check for Yolo which is common for txt
-        with open(file, 'r') as f:
+        # Check for Yolo which is common for txt files
+        with open(file_path, 'r') as f:
             first_line = f.readline().strip().split()
             if len(first_line) == 5 and all(is_float(val) for val in first_line):
-                return TXT_YOLO
+                if all(0 <= float(val) <= 1 for val in first_line[1:]):
+                    return TXT_YOLO
     elif file_extension == '.json':
         # Check for Coco which is common for json files
         try:
