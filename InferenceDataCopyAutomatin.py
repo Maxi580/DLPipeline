@@ -33,7 +33,7 @@ def docker_cp_images_to_container(local_path, container_id, container_path):
     return copied_count > 0
 
 
-container_id = "69aebefcfe4e1e59c02790e097a954bd795dec77980382517196e1a0c7716419"
+container_id = "895a72198b68401693c71817ed27153b02090465fff27f207a93df9870fa1e29"
 local_path = r"C:\Users\maxie\Desktop\inference\input"
 container_path = "/inference/input_images"
 

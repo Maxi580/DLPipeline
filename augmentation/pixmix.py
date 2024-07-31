@@ -67,6 +67,10 @@ def update_augmentations(augmentations):
         blur_max = get_env_int('GAUSSIAN_BLUR_MAX', 5)
         augmentations.append(A.GaussianBlur(blur_limit=(blur_min, blur_max), p=1.0))
 
+    if get_env_bool('ENABLE_GAUSSIAN_NOISE'):
+        var_limit = get_env_float('NOISE_VAR_LIMIT', 0.05)
+        augmentations.append(A.GaussNoise(var_limit=var_limit, p=1.0))
+
     if get_env_bool('ENABLE_RANDOM_GAMMA'):
         gamma_limit = get_env_int('RANDOM_GAMMA_LIMIT', 1)
         augmentations.append(A.RandomGamma(gamma_limit=gamma_limit, p=1.0))

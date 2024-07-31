@@ -12,271 +12,293 @@
     <div class="form-container">
         <form id="configForm" method="POST" action="{{ url_for('config_page') }}">
             <h2>Neural Network Configuration</h2>
+            <div class="yolo-section">
+                <h3>Model Selection</h3>
+                <div class="form-group">
+                    <label for="CREATE_YOLO_MODEL">Create Yolo Model:</label>
+                    <select id="CREATE_YOLO_MODEL" name="CREATE_YOLO_MODEL">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label for="CREATE_YOLO_MODEL">Create Yolo Model:</label>
-                <select id="CREATE_YOLO_MODEL" name="CREATE_YOLO_MODEL">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
+                <div class="form-group">
+                    <label for="YOLO_MODEL">Choose the Yolo Model:</label>
+                    <select id="YOLO_MODEL" name="YOLO_MODEL">
+                        <optgroup label="YOLOv5 Detection">
+                            <option value="yolov5nu.pt">YOLOv5n-ultralytics</option>
+                            <option value="yolov5su.pt">YOLOv5s-ultralytics</option>
+                            <option value="yolov5mu.pt">YOLOv5m-ultralytics</option>
+                            <option value="yolov5lu.pt">YOLOv5l-ultralytics</option>
+                            <option value="yolov5xu.pt">YOLOv5x-ultralytics</option>
+                            <option value="yolov5n6u.pt">YOLOv5n6-ultralytics</option>
+                            <option value="yolov5s6u.pt">YOLOv5s6-ultralytics</option>
+                            <option value="yolov5m6u.pt">YOLOv5m6-ultralytics</option>
+                            <option value="yolov5l6u.pt">YOLOv5l6-ultralytics</option>
+                            <option value="yolov5x6u.pt">YOLOv5x6-ultralytics</option>
+                        </optgroup>
+
+                        <optgroup label="YOLOv8 Detection Basic">
+                            <option value="yolov8n.pt">YOLOv8 Nano</option>
+                            <option value="yolov8s.pt">YOLOv8 Small</option>
+                            <option value="yolov8m.pt">YOLOv8 Medium</option>
+                            <option value="yolov8l.pt">YOLOv8 Large</option>
+                            <option value="yolov8x.pt">YOLOv8 Extra Large</option>
+                        </optgroup>
+
+                        <optgroup label="YOLOv8 Detection Extended">
+                            <option value="yolov8n6.pt">YOLOv8n6</option>
+                            <option value="yolov8s6.pt">YOLOv8s6</option>
+                            <option value="yolov8m6.pt">YOLOv8m6</option>
+                            <option value="yolov8l6.pt">YOLOv8l6</option>
+                            <option value="yolov8x6.pt">YOLOv8x6</option>
+                        </optgroup>
+
+
+                        <optgroup label="YOLOv10 Pre Trained">
+                            <option value="yolov10n.pt">(.PT) YOLO v10 Nano</option>
+                            <option value="yolov10s.pt">(.PT) YOLO v10 Small</option>
+                            <option value="yolov10m.pt">(.PT) YOLO v10 Medium</option>
+                            <option value="yolov10l.pt">(.PT) YOLO v10 Large</option>
+                            <option value="yolov10x.pt">(.PT) YOLO v10 Extra Large</option>
+                        </optgroup>
+
+                        <optgroup label="YOLOv10 NOT Pre Trained">
+                            <option value="yolov10n.yaml">(.YAML) YOLO v10 Nano</option>
+                            <option value="yolov10s.yaml">(.YAML) YOLO v10 Small</option>
+                            <option value="yolov10m.yaml">(.YAML) YOLO v10 Medium</option>
+                            <option value="yolov10l.yaml">(.YAML) YOLO v10 Large</option>
+                            <option value="yolov10x.yaml">(.YAML) YOLO v10 Extra Large</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="MODEL_WITHOUT_AUGMENTATION">Create Model Without Augmentation:</label>
+                    <select id="MODEL_WITHOUT_AUGMENTATION" name="MODEL_WITHOUT_AUGMENTATION">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="YOLO_MODEL">Choose the Yolo Model:</label>
-                <select id="YOLO_MODEL" name="YOLO_MODEL">
-                    <optgroup label="YOLOv5 Detection">
-                        <option value="yolov5nu.pt">YOLOv5n-ultralytics</option>
-                        <option value="yolov5su.pt">YOLOv5s-ultralytics</option>
-                        <option value="yolov5mu.pt">YOLOv5m-ultralytics</option>
-                        <option value="yolov5lu.pt">YOLOv5l-ultralytics</option>
-                        <option value="yolov5xu.pt">YOLOv5x-ultralytics</option>
-                        <option value="yolov5n6u.pt">YOLOv5n6-ultralytics</option>
-                        <option value="yolov5s6u.pt">YOLOv5s6-ultralytics</option>
-                        <option value="yolov5m6u.pt">YOLOv5m6-ultralytics</option>
-                        <option value="yolov5l6u.pt">YOLOv5l6-ultralytics</option>
-                        <option value="yolov5x6u.pt">YOLOv5x6-ultralytics</option>
-                    </optgroup>
 
-                    <optgroup label="YOLOv8 Detection Basic">
-                        <option value="yolov8n.pt">YOLOv8 Nano</option>
-                        <option value="yolov8s.pt">YOLOv8 Small</option>
-                        <option value="yolov8m.pt">YOLOv8 Medium</option>
-                        <option value="yolov8l.pt">YOLOv8 Large</option>
-                        <option value="yolov8x.pt">YOLOv8 Extra Large</option>
-                    </optgroup>
+            <div class="pixmix-section">
+                <h3>Pixmix Augmentation</h3>
+                <div class="form-group">
+                    <label for="PIXMIX_AUGMENTATION">Create Model using Pixmix Augmentation:</label>
+                    <select id="PIXMIX_AUGMENTATION" name="PIXMIX_AUGMENTATION">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
 
-                    <optgroup label="YOLOv8 Detection Extended">
-                        <option value="yolov8n6.pt">YOLOv8n6</option>
-                        <option value="yolov8s6.pt">YOLOv8s6</option>
-                        <option value="yolov8m6.pt">YOLOv8m6</option>
-                        <option value="yolov8l6.pt">YOLOv8l6</option>
-                        <option value="yolov8x6.pt">YOLOv8x6</option>
-                    </optgroup>
+                <div class="form-group">
+                    <label for="PIXMIX_AUGMENTATION_PROBABILITY">Augmentation Probability:</label>
+                    <input type="number" id="PIXMIX_AUGMENTATION_PROBABILITY" name="PIXMIX_AUGMENTATION_PROBABILITY"
+                           min="0" max="1" step="0.01" value="0.5">
+                </div>
 
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_HORIZONTAL_FLIP">Enable Horizontal Flip: </label>
+                    <select id="PIXMIX_ENABLE_HORIZONTAL_FLIP" name="PIXMIX_ENABLE_HORIZONTAL_FLIP">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
 
-                    <optgroup label="YOLOv10 Pre Trained">
-                        <option value="yolov10n.pt">(.PT) YOLO v10 Nano</option>
-                        <option value="yolov10s.pt">(.PT) YOLO v10 Small</option>
-                        <option value="yolov10m.pt">(.PT) YOLO v10 Medium</option>
-                        <option value="yolov10l.pt">(.PT) YOLO v10 Large</option>
-                        <option value="yolov10x.pt">(.PT) YOLO v10 Extra Large</option>
-                    </optgroup>
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_VERTICAL_FLIP">Enable Vertical Flip:</label>
+                    <select id="PIXMIX_ENABLE_VERTICAL_FLIP" name="PIXMIX_ENABLE_VERTICAL_FLIP">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
 
-                    <optgroup label="YOLOv10 NOT Pre Trained">
-                        <option value="yolov10n.yaml">(.YAML) YOLO v10 Nano</option>
-                        <option value="yolov10s.yaml">(.YAML) YOLO v10 Small</option>
-                        <option value="yolov10m.yaml">(.YAML) YOLO v10 Medium</option>
-                        <option value="yolov10l.yaml">(.YAML) YOLO v10 Large</option>
-                        <option value="yolov10x.yaml">(.YAML) YOLO v10 Extra Large</option>
-                    </optgroup>
-                </select>
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_ROTATE">Enable Rotate:</label>
+                    <select id="PIXMIX_ENABLE_ROTATE" name="PIXMIX_ENABLE_ROTATE">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ROTATE_LIMIT">Rotate Limit:</label>
+                    <input type="number" id="PIXMIX_ROTATE_LIMIT" name="PIXMIX_ROTATE_LIMIT" min="0" max="360" value="45">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_HUE_SATURATION">Enable Hue Saturation:</label>
+                    <select id="PIXMIX_ENABLE_HUE_SATURATION" name="PIXMIX_ENABLE_HUE_SATURATION">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_HUE_SHIFT_LIMIT">Hue Shift Limit:</label>
+                    <input type="number" id="PIXMIX_HUE_SHIFT_LIMIT" name="PIXMIX_HUE_SHIFT_LIMIT" min="0" max="100" value="10">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_SAT_SHIFT_LIMIT">Saturation Shift Limit:</label>
+                    <input type="number" id="PIXMIX_SAT_SHIFT_LIMIT" name="PIXMIX_SAT_SHIFT_LIMIT" min="0" max="100" value="10">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_VAL_SHIFT_LIMIT">Value Shift Limit:</label>
+                    <input type="number" id="PIXMIX_VAL_SHIFT_LIMIT" name="PIXMIX_VAL_SHIFT_LIMIT" min="0" max="100" value="10">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_BRIGHTNESS_CONTRAST">Enable Brightness Contrast:</label>
+                    <select id="PIXMIX_ENABLE_BRIGHTNESS_CONTRAST" name="PIXMIX_ENABLE_BRIGHTNESS_CONTRAST">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_BRIGHTNESS_LIMIT">Brightness Limit:</label>
+                    <input type="number" id="PIXMIX_BRIGHTNESS_LIMIT" name="PIXMIX_BRIGHTNESS_LIMIT" min="0" max="1" step="0.1" value="0.2">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_CONTRAST_LIMIT">Contrast Limit:</label>
+                    <input type="number" id="PIXMIX_CONTRAST_LIMIT" name="PIXMIX_CONTRAST_LIMIT" min="0" max="1" step="0.1" value="0.2">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_SHEAR">Enable Shear:</label>
+                    <select id="PIXMIX_ENABLE_SHEAR" name="PIXMIX_ENABLE_SHEAR">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_SHEAR_DEGREE_LIMIT">Shear Degree Limit:</label>
+                    <input type="number" id="PIXMIX_SHEAR_DEGREE_LIMIT" name="PIXMIX_SHEAR_DEGREE_LIMIT" min="0" max="90" value="20">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_GAUSSIAN_BLUR">Enable Gaussian Blur:</label>
+                    <select id="PIXMIX_ENABLE_GAUSSIAN_BLUR" name="PIXMIX_ENABLE_GAUSSIAN_BLUR">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_GAUSSIAN_BLUR_MINIMUM">Gaussian Blur Minimum:</label>
+                    <input type="number" id="PIXMIX_GAUSSIAN_BLUR_MINIMUM" name="PIXMIX_GAUSSIAN_BLUR_MINIMUM" min="0" max="10" value="3">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_GAUSSIAN_BLUR_MAX">Gaussian Blur Maximum:</label>
+                    <input type="number" id="PIXMIX_GAUSSIAN_BLUR_MAX" name="PIXMIX_GAUSSIAN_BLUR_MAX" min="0" max="10" value="5">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_GAUSSIAN_NOISE">Enable Gaussian Noise:</label>
+                    <select id="PIXMIX_ENABLE_GAUSSIAN_NOISE" name="PIXMIX_ENABLE_GAUSSIAN_NOISE">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_NOISE_VAR_LIMIT">Gaussian Noise Limit:</label>
+                    <input type="number" id="PIXMIX_NOISE_VAR_LIMIT" name="PIXMIX_NOISE_VAR_LIMIT" min="0" max="1" step="0.01" value="0.2">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_RANDOM_GAMMA_LIMIT">Random Gamma Limit:</label>
+                    <input type="number" id="PIXMIX_RANDOM_GAMMA_LIMIT" name="PIXMIX_RANDOM_GAMMA_LIMIT" min="0" max="1" step="0.1" value="0.2">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_RANDOM_RAIN">Enable Random Rain:</label>
+                    <select id="PIXMIX_ENABLE_RANDOM_RAIN" name="PIXMIX_ENABLE_RANDOM_RAIN">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_RANDOM_FOG">Enable Random Fog:</label>
+                    <select id="PIXMIX_ENABLE_RANDOM_FOG" name="PIXMIX_ENABLE_RANDOM_FOG">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_RANDOM_SNOW">Enable Random Snow:</label>
+                    <select id="PIXMIX_ENABLE_RANDOM_SNOW" name="PIXMIX_ENABLE_RANDOM_SNOW">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_RANDOM_SHADOW">Enable Random Shadow:</label>
+                    <select id="PIXMIX_ENABLE_RANDOM_SHADOW" name="PIXMIX_ENABLE_RANDOM_SHADOW">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_ENABLE_RANDOM_SUNFLARE">Enable Random Sunflare:</label>
+                    <select id="PIXMIX_ENABLE_RANDOM_SUNFLARE" name="PIXMIX_ENABLE_RANDOM_SUNFLARE">
+                        <option value="TRUE">Yes</option>
+                        <option value="FALSE">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_MIXING_PROBABILITY">Mixing Probability:</label>
+                    <input type="number" id="PIXMIX_MIXING_PROBABILITY" name="PIXMIX_MIXING_PROBABILITY"
+                           min="0" max="1" step="0.01" value="0.5">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_MIXING_FACTOR_LOWER_RANGE">Minimum Alpha for Image Mixing:</label>
+                    <input type="number" id="PIXMIX_MIXING_FACTOR_LOWER_RANGE" name="PIXMIX_MIXING_FACTOR_LOWER_RANGE"
+                           min="0" max="1" step="0.01" value="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label for="PIXMIX_MIXING_FACTOR_UPPER_RANGE">Maximum Alpha for Image Mixing:</label>
+                    <input type="number" id="PIXMIX_MIXING_FACTOR_UPPER_RANGE" name="PIXMIX_MIXING_FACTOR_UPPER_RANGE"
+                           min="0" max="1" step="0.01" value="0.4">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="MODEL_WITHOUT_AUGMENTATION">Create Model Without Augmentation:</label>
-                <select id="MODEL_WITHOUT_AUGMENTATION" name="MODEL_WITHOUT_AUGMENTATION">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
+            <div class="pixmix-section">
+                <h3>Final Model Configuration</h3>
+                <div class="form-group">
+                    <label for="NUMBER_OF_AUGMENTED_IMAGES">Number of Augmented Images:</label>
+                    <input type="number" id="NUMBER_OF_AUGMENTED_IMAGES" name="NUMBER_OF_AUGMENTED_IMAGES"
+                           min="0" max="10000" step="1" value="200">
+                </div>
 
-            <div class="form-group">
-                <label for="PIXMIX_AUGMENTATION">Create Model using Pixmix Augmentation:</label>
-                <select id="PIXMIX_AUGMENTATION" name="PIXMIX_AUGMENTATION">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="EPOCHS">Epochs:</label>
+                    <input type="number" id="EPOCHS" name="EPOCHS"
+                           min="0" max="1000" step="1" value="20">
+                </div>
 
-            <div class="form-group">
-                <label for="PIXMIX_AUGMENTATION_PROBABILITY">Pixmix Augmentation Probability:</label>
-                <input type="number" id="PIXMIX_AUGMENTATION_PROBABILITY" name="PIXMIX_AUGMENTATION_PROBABILITY"
-                       min="0" max="1" step="0.01" value="0.5">
-            </div>
+                <div class="form-group">
+                    <label for="BATCH_SIZE">Batch Size:</label>
+                    <input type="number" id="BATCH_SIZE" name="BATCH_SIZE"
+                           min="0" max="1000" step="1" value="16">
+                </div>
 
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_HORIZONTAL_FLIP">(Pixmix) Enable Horizontal Flip: </label>
-                <select id="PIXMIX_ENABLE_HORIZONTAL_FLIP" name="PIXMIX_ENABLE_HORIZONTAL_FLIP">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
+                <button type="submit">Save Configuration!</button>
             </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_VERTICAL_FLIP">(Pixmix) Enable Vertical Flip:</label>
-                <select id="PIXMIX_ENABLE_VERTICAL_FLIP" name="PIXMIX_ENABLE_VERTICAL_FLIP">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_ROTATE">(Pixmix) Enable Rotate:</label>
-                <select id="PIXMIX_ENABLE_ROTATE" name="PIXMIX_ENABLE_ROTATE">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ROTATE_LIMIT">(Pixmix) Rotate Limit:</label>
-                <input type="number" id="PIXMIX_ROTATE_LIMIT" name="PIXMIX_ROTATE_LIMIT" min="0" max="360" value="45">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_HUE_SATURATION">(Pixmix) Enable Hue Saturation:</label>
-                <select id="PIXMIX_ENABLE_HUE_SATURATION" name="PIXMIX_ENABLE_HUE_SATURATION">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_HUE_SHIFT_LIMIT">(Pixmix) Hue Shift Limit:</label>
-                <input type="number" id="PIXMIX_HUE_SHIFT_LIMIT" name="PIXMIX_HUE_SHIFT_LIMIT" min="0" max="100" value="10">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_SAT_SHIFT_LIMIT">(Pixmix) Saturation Shift Limit:</label>
-                <input type="number" id="PIXMIX_SAT_SHIFT_LIMIT" name="PIXMIX_SAT_SHIFT_LIMIT" min="0" max="100" value="10">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_VAL_SHIFT_LIMIT">(Pixmix) Value Shift Limit:</label>
-                <input type="number" id="PIXMIX_VAL_SHIFT_LIMIT" name="PIXMIX_VAL_SHIFT_LIMIT" min="0" max="100" value="10">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_BRIGHTNESS_CONTRAST">(Pixmix) Enable Brightness Contrast:</label>
-                <select id="PIXMIX_ENABLE_BRIGHTNESS_CONTRAST" name="PIXMIX_ENABLE_BRIGHTNESS_CONTRAST">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_BRIGHTNESS_LIMIT">(Pixmix) Brightness Limit:</label>
-                <input type="number" id="PIXMIX_BRIGHTNESS_LIMIT" name="PIXMIX_BRIGHTNESS_LIMIT" min="0" max="1" step="0.1" value="0.2">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_CONTRAST_LIMIT">(Pixmix) Contrast Limit:</label>
-                <input type="number" id="PIXMIX_CONTRAST_LIMIT" name="PIXMIX_CONTRAST_LIMIT" min="0" max="1" step="0.1" value="0.2">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_SHEAR">(Pixmix) Enable Shear:</label>
-                <select id="PIXMIX_ENABLE_SHEAR" name="PIXMIX_ENABLE_SHEAR">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_SHEAR_DEGREE_LIMIT">(Pixmix) Shear Degree Limit:</label>
-                <input type="number" id="PIXMIX_SHEAR_DEGREE_LIMIT" name="PIXMIX_SHEAR_DEGREE_LIMIT" min="0" max="90" value="20">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_GAUSSIAN_BLUR">(Pixmix) Enable Gaussian Blur:</label>
-                <select id="PIXMIX_ENABLE_GAUSSIAN_BLUR" name="PIXMIX_ENABLE_GAUSSIAN_BLUR">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_GAUSSIAN_BLUR_MINIMUM">(Pixmix) Gaussian Blur Minimum:</label>
-                <input type="number" id="PIXMIX_GAUSSIAN_BLUR_MINIMUM" name="PIXMIX_GAUSSIAN_BLUR_MINIMUM" min="0" max="10" value="3">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_GAUSSIAN_BLUR_MAX">(Pixmix) Gaussian Blur Maximum:</label>
-                <input type="number" id="PIXMIX_GAUSSIAN_BLUR_MAX" name="PIXMIX_GAUSSIAN_BLUR_MAX" min="0" max="10" value="5">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_RANDOM_GAMMA_LIMIT">(Pixmix) Random Gamma Limit:</label>
-                <input type="number" id="PIXMIX_RANDOM_GAMMA_LIMIT" name="PIXMIX_RANDOM_GAMMA_LIMIT" min="0" max="1" step="0.1" value="0.2">
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_RANDOM_RAIN">(Pixmix) Enable Random Rain:</label>
-                <select id="PIXMIX_ENABLE_RANDOM_RAIN" name="PIXMIX_ENABLE_RANDOM_RAIN">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_RANDOM_FOG">(Pixmix) Enable Random Fog:</label>
-                <select id="PIXMIX_ENABLE_RANDOM_FOG" name="PIXMIX_ENABLE_RANDOM_FOG">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_RANDOM_SNOW">(Pixmix) Enable Random Snow:</label>
-                <select id="PIXMIX_ENABLE_RANDOM_SNOW" name="PIXMIX_ENABLE_RANDOM_SNOW">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_RANDOM_SHADOW">(Pixmix) Enable Random Shadow:</label>
-                <select id="PIXMIX_ENABLE_RANDOM_SHADOW" name="PIXMIX_ENABLE_RANDOM_SHADOW">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_ENABLE_RANDOM_SUNFLARE">(Pixmix) Enable Random Sunflare:</label>
-                <select id="PIXMIX_ENABLE_RANDOM_SUNFLARE" name="PIXMIX_ENABLE_RANDOM_SUNFLARE">
-                    <option value="TRUE">Yes</option>
-                    <option value="FALSE">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="PIXMIX_MIXING_PROBABILITY">Pixmix Mixing Probability:</label>
-                <input type="number" id="PIXMIX_MIXING_PROBABILITY" name="PIXMIX_MIXING_PROBABILITY"
-                       min="0" max="1" step="0.01" value="0.5">
-            </div>
-
-            <div class="form-group">
-                <label for="MIXING_FACTOR_LOWER_RANGE">Minimum Alpha for Image Mixing:</label>
-                <input type="number" id="MIXING_FACTOR_LOWER_RANGE" name="MIXING_FACTOR_LOWER_RANGE"
-                       min="0" max="1" step="0.01" value="0.1">
-            </div>
-
-            <div class="form-group">
-                <label for="MIXING_FACTOR_UPPER_RANGE">Maximum Alpha for Image Mixing:</label>
-                <input type="number" id="MIXING_FACTOR_UPPER_RANGE" name="MIXING_FACTOR_UPPER_RANGE"
-                       min="0" max="1" step="0.01" value="0.4">
-            </div>
-
-            <div class="form-group">
-                <label for="NUMBER_OF_AUGMENTED_IMAGES">Number of Augmented Images:</label>
-                <input type="number" id="NUMBER_OF_AUGMENTED_IMAGES" name="NUMBER_OF_AUGMENTED_IMAGES"
-                       min="0" max="10000" step="1" value="200">
-            </div>
-
-            <div class="form-group">
-                <label for="EPOCHS">Epochs:</label>
-                <input type="number" id="EPOCHS" name="EPOCHS"
-                       min="0" max="1000" step="1" value="20">
-            </div>
-
-            <div class="form-group">
-                <label for="BATCH_SIZE">Batch Size:</label>
-                <input type="number" id="BATCH_SIZE" name="BATCH_SIZE"
-                       min="0" max="1000" step="1" value="16">
-            </div>
-
-            <button type="submit">Save Configuration!</button>
         </form>
     </div>
 
