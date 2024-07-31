@@ -76,3 +76,127 @@ button:hover {
     background-color: #45a049;
 }
 
+
+.upload-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.drop-zone-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.drop-zone {
+    border: 2px dashed #4CAF50;
+    border-radius: 8px;
+    padding: 5%;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    width: 40%;
+}
+
+.drop-zone:hover, .drop-zone.dragover {
+    background-color: #f0f0f0;
+    border-color: #4CAF50;
+}
+
+.drop-zone p {
+    margin: 0;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.file-list {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.containerbrowser {
+    width: 40%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.containerbrowser input,
+.containerbrowser button {
+    margin-top: 20px;
+    width: 80%;
+}
+.file-item {
+    background-color: #f0f0f0;
+    width: 20%;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-item button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.file-item button:hover {
+    background-color: #e60000;
+}
+
+.upload-section h3 {
+    color: #4CAF50;
+    margin-bottom: 15px;
+}
+
+.upload-fields {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.upload-fields .form-group {
+    margin-bottom: 15px;
+}
+
+.upload-fields label {
+    display: block;
+    margin-bottom: 5px;
+    color: #4CAF50;
+}
+
+.upload-fields input[type="text"] {
+    width: 40%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.upload-fields input[type="text"]::placeholder {
+    color: #999;
+}
+
+.docker-upload-btn {
+    margin-top: 15px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.docker-upload-btn:hover {
+    background-color: #45a049;
+}
