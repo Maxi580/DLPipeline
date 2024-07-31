@@ -61,6 +61,7 @@ services:
       - app-network
     volumes:
       - env_data:/env_data
+      - data_volume:/data
       - ./app:/app #Dev
     env_file:
       - ./.env
