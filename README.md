@@ -1,3 +1,7 @@
+# Annotations
+* Preprocessing currently expects xml (pascalvoc), json (coco) or txt (yolo)
+
+
 # Steps
 * Configure training over web Interface
 * Load images into data_volume (over script)

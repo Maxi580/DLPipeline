@@ -1,16 +1,8 @@
-import docker
-from flask import Flask, render_template, request, jsonify
-import subprocess
-from flask_cors import CORS
+from flask import Flask, render_template, request
 import os
 
 ENV_PATH = os.getenv('ENV_PATH')
-
 app = Flask(__name__)
-
-CORS(app)
-app.config['UPLOAD_FOLDER'] = '/data/tmp'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -71,98 +63,6 @@ def config_page():
 
         return 'Configuration updated in .env file!'
     return render_template('config_form.html')
-
-
-@app.route('/files', methods=['GET'])
-def file_management_page():
-    return render_template('file_management.html')
-
-
-@app.route('/upload-to-docker', methods=['POST'])
-def upload_to_docker():
-    if 'files[]' not in request.files:
-        return jsonify({"success": False, "error": "No file part"})
-
-    files = request.files.getlist('files[]')
-    container_id = request.form.get('containerId')
-    container_path = request.form.get('containerPath')
-
-    if not container_id or not container_path:
-        return jsonify({"success": False, "error": "Missing container ID or path"})
-
-    try:
-        for file in files:
-            if file and file.filename:
-                temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-                try:
-                    file.save(temp_file_path)
-                    cmd = f"docker cp {temp_file_path} {container_id}:{container_path}"
-                    subprocess.run(cmd, shell=True, check=True)
-                finally:
-                    if os.path.exists(temp_file_path):
-                        os.remove(temp_file_path)
-
-        return jsonify({"success": True, "message": "Files uploaded successfully"})
-    except subprocess.CalledProcessError as e:
-        return jsonify({"success": False, "error": str(e)})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-
-@app.route('/list-docker-contents', methods=['POST'])
-def list_docker_contents():
-    volumeId = request.form.get('volumeId')
-    path = request.form.get('path', '/')
-
-    if not volumeId:
-        return jsonify({"success": False, "error": "Volume name is required"}), 400
-
-    try:
-        client = docker.from_env()
-
-        # Ensure the alpine image is pulled
-        try:
-            client.images.get('alpine:latest')
-        except docker.errors.ImageNotFound:
-            client.images.pull('alpine:latest')
-
-        # Create a temporary container to access the volume
-        container = client.containers.create(
-            'alpine',
-            'ls -la ' + path,
-            volumes={volumeId: {'bind': '/mnt/volume', 'mode': 'ro'}},
-            working_dir='/mnt/volume'
-        )
-
-        # Start the container
-        container.start()
-
-        # Wait for the container to finish and get the output
-        result = container.wait()
-        output = container.logs().decode('utf-8')
-
-        # Remove the temporary container
-        container.remove()
-
-        if result['StatusCode'] != 0:
-            return jsonify({"success": False, "error": f"Error listing contents: {output}"}), 500
-
-        # Parse the output
-        lines = output.split('\n')
-        contents = []
-        for line in lines[1:]:  # Skip the first line (total)
-            if line.strip():
-                parts = line.split()
-                if len(parts) >= 9:
-                    file_type = 'd' if parts[0].startswith('d') else 'f'
-                    name = ' '.join(parts[8:])
-                    contents.append({"name": name, "type": file_type})
-
-        return jsonify({"success": True, "contents": contents})
-
-    except Exception as e:
-        app.logger.error(f"Error listing Docker volume contents: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}), 500
 
 
 if __name__ == '__main__':

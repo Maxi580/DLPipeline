@@ -60,8 +60,6 @@ services:
     networks:
       - app-network
     volumes:
-      - data_volume:/data
-      - inference_volume:/inference
       - env_data:/env_data
       - ./app:/app #Dev
     env_file:
