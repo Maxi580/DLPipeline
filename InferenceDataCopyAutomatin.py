@@ -1,6 +1,7 @@
 import subprocess
 import os
 
+# Script to copy inference images onto container
 
 def docker_cp_images_to_container(local_path, container_id, container_path):
     local_path = os.path.normpath(local_path)
@@ -33,9 +34,9 @@ def docker_cp_images_to_container(local_path, container_id, container_path):
     return copied_count > 0
 
 
-container_id = "895a72198b68401693c71817ed27153b02090465fff27f207a93df9870fa1e29"
-local_path = r"C:\Users\maxie\Desktop\inference\input"
-container_path = "/inference/input_images"
+container_id = "" #  id of your inference volume container
+local_path = r""  # Local Path to your images
+container_path = "/inference/input_images"  # Path where the images for inference are stored
 
 if __name__ == '__main__':
     docker_cp_images_to_container(local_path, container_id, container_path)
