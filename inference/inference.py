@@ -86,7 +86,7 @@ def inference():
 
                 print(f"Processed: {filename}")
 
-    print("All images processed!")
+        print("All images processed!")
 
 
 if __name__ == '__main__':
