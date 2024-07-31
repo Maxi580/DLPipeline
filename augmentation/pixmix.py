@@ -6,20 +6,85 @@ FRACTAL_PATH = os.getenv('FRACTAL_PATH')
 WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
 NUMBER_OF_AUGMENTED_IMAGES = int(os.getenv('NUMBER_OF_AUGMENTED_IMAGES'))
+AUGMENTATIONS = os.getenv('AUGMENTATIONS')
 PIXMIX_AUGMENTATION_PROBABILITY = float(os.getenv('PIXMIX_AUGMENTATION_PROBABILITY'))
 PIXMIX_MIXING_PROBABILITY = float(os.getenv('PIXMIX_MIXING_PROBABILITY'))
+MIXING_FACTOR_LOWER_RANGE = float(os.getenv('MIXING_FACTOR_LOWER_RANGE'))
+MIXING_FACTOR_UPPER_RANGE = float(os.getenv('MIXING_FACTOR_LOWER_RANGE'))
 
-AUGMENTATIONS = [
-    # Geometrical transformations
-    A.HorizontalFlip(p=1.0),
-    A.VerticalFlip(p=1.0),
-    A.Rotate(limit=45, p=1.0),
 
-    # Color transformations
-    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=0, p=1.0),
-    A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=1.0),
-    A.GaussianBlur(blur_limit=(3, 7), p=1.0),
-]
+def get_env_bool(name, default=False):
+    return os.getenv(name, str(default)).lower() == 'true'
+
+
+def get_env_float(name, default=0.0):
+    return float(os.getenv(name, default))
+
+
+def get_env_int(name, default=0):
+    return int(os.getenv(name, default))
+
+
+augmentations = []
+
+
+def get_augmentations():
+    return augmentations
+
+
+def update_augmentations(augmentations):
+    if get_env_bool('ENABLE_HORIZONTAL_FLIP'):
+        augmentations.append(A.HorizontalFlip(p=1.0))
+
+    if get_env_bool('ENABLE_VERTICAL_FLIP'):
+        augmentations.append(A.VerticalFlip(p=1.0))
+
+    if get_env_bool('ENABLE_ROTATE'):
+        rotate_limit = get_env_int('ROTATE_LIMIT', 45)
+        augmentations.append(A.Rotate(limit=rotate_limit, p=1.0))
+
+    if get_env_bool('ENABLE_HUE_SATURATION'):
+        hue_shift = get_env_int('HUE_SHIFT_LIMIT', 10)
+        sat_shift = get_env_int('SAT_SHIFT_LIMIT', 10)
+        val_shift = get_env_int('VAL_SHIFT_LIMIT', 10)
+        augmentations.append(A.HueSaturationValue(hue_shift_limit=hue_shift,
+                                                  sat_shift_limit=sat_shift,
+                                                  val_shift_limit=val_shift,
+                                                  p=1.0))
+
+    if get_env_bool('ENABLE_BRIGHTNESS_CONTRAST'):
+        brightness_limit = get_env_float('BRIGHTNESS_LIMIT', 0.2)
+        contrast_limit = get_env_float('CONTRAST_LIMIT', 0.2)
+        augmentations.append(A.RandomBrightnessContrast(brightness_limit=brightness_limit,
+                                                        contrast_limit=contrast_limit,
+                                                        p=1.0))
+    if get_env_bool('ENABLE_SHEAR'):
+        shear_degree_limit = get_env_float('SHEAR_DEGREE_LIMIT', 20)
+        augmentations.append(A.Affine(shear=(-shear_degree_limit, shear_degree_limit), p=1.0))
+
+    if get_env_bool('ENABLE_GAUSSIAN_BLUR'):
+        blur_min = get_env_int('GAUSSIAN_BLUR_MINIMUM', 3)
+        blur_max = get_env_int('GAUSSIAN_BLUR_MAX', 5)
+        augmentations.append(A.GaussianBlur(blur_limit=(blur_min, blur_max), p=1.0))
+
+    if get_env_bool('ENABLE_RANDOM_GAMMA'):
+        gamma_limit = get_env_int('RANDOM_GAMMA_LIMIT', 1)
+        augmentations.append(A.RandomGamma(gamma_limit=gamma_limit, p=1.0))
+
+    if get_env_bool('ENABLE_RANDOM_RAIN'):
+        augmentations.append(A.RandomRain(p=1.0))
+
+    if get_env_bool('ENABLE_RANDOM_FOG'):
+        augmentations.append(A.RandomFog(p=1.0))
+
+    if get_env_bool('ENABLE_RANDOM_SNOW'):
+        augmentations.append(A.RandomSnow(p=1.0))
+
+    if get_env_bool('ENABLE_RANDOM_SHADOW'):
+        augmentations.append(A.RandomShadow(p=1.0))
+
+    if get_env_bool('ENABLE_RANDOM_SUNFLARE'):
+        augmentations.append(A.RandomSunFlare(p=1.0))
 
 
 def mix_images(image, fractal, alpha=0.5):
@@ -38,7 +103,7 @@ def random_augmentation(image, annotations):
     bboxes = [[ann[1], ann[2], ann[3], ann[4]] for ann in annotations]
     class_labels = [ann[0] for ann in annotations]
 
-    aug = random.choice(AUGMENTATIONS)
+    aug = random.choice(get_augmentations())
     aug_with_bbox = A.Compose([aug], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
 
     augmented = aug_with_bbox(image=image_np, bboxes=bboxes, class_labels=class_labels)
@@ -60,7 +125,7 @@ def apply_pixmix(image, annotation, mixing_set):
     if random.random() < PIXMIX_MIXING_PROBABILITY:
         mixing_pic_path = random.choice(mixing_set)
         mixing_pic = Image.open(mixing_pic_path)
-        alpha = random.uniform(0.2, 0.4)
+        alpha = random.uniform(MIXING_FACTOR_LOWER_RANGE, MIXING_FACTOR_UPPER_RANGE)
         image = mix_images(image, mixing_pic, alpha)
 
     return image, annotation
@@ -72,6 +137,7 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
     os.makedirs(annotation_output_dir, exist_ok=True)
 
     mixing_set = load_image_set(FRACTAL_PATH)
+    update_augmentations(get_augmentations())
 
     cntr = 0
     # Process each image in the input directory + the corresponding annotation
@@ -91,7 +157,8 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
                             annotation_found = True
                             with Image.open(input_image_path) as image:
                                 # Extract annotations from txt file
-                                annotations = read_yolo_annotation(os.path.join(annotation_input_dir, annotation_filename))
+                                annotations = read_yolo_annotation(
+                                    os.path.join(annotation_input_dir, annotation_filename))
                                 augmented_img, augmented_annotations = apply_pixmix(image, annotations, mixing_set)
 
                                 output_image_filename = f"{cntr}{image_filename}"

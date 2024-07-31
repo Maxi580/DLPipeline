@@ -23,7 +23,7 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "b2be34e280a7681b0bfa1023db46a0f19e89f6f639165740458c3cb72498acc7"
+container_id = "f279ff92e3aa69fc819a4761e2efae5a71e179378fb42fe8892999941ef3f5ad"
 local_path = r"C:\Users\maxie\Desktop\ShipDetection"
 container_path = "/data"
 

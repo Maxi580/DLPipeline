@@ -5,6 +5,7 @@ import json
 
 IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
 IMAGE_HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
+YOLO_MODEL = os.getenv('YOLO_MODEL')
 EPOCHS = int(os.getenv('EPOCHS'))
 BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 
@@ -61,7 +62,7 @@ def create_dataset_yaml(dataset_path, output_path):
 
 
 def create_yolo_model(input_path, data_yaml_path, name):
-    model = YOLO('yolov8n.yaml')
+    model = YOLO(YOLO_MODEL)
 
     create_dataset_yaml(input_path, data_yaml_path)
 

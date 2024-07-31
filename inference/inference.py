@@ -8,10 +8,10 @@ MODEL_INFERENCE_INPUT = os.getenv('MODEL_INFERENCE_INPUT')
 MODEL_INFERENCE_OUTPUT = os.getenv('MODEL_INFERENCE_OUTPUT')
 
 
-def load_yolo_model(model_dir):
+def load_pt_model(model_dir):
     pt_files = [f for f in os.listdir(model_dir) if f.endswith('.pt')]
     if not pt_files:
-        raise FileNotFoundError(f"No .pt files found in '{model_dir}'")
+        return False
     else:
         model_path = os.path.join(model_dir, pt_files[0])
         return YOLO(model_path)
@@ -45,7 +45,7 @@ def process_results(results, image):
 
 def inference():
     if MODEL_TYPE.lower() == 'yolo':
-        model = load_yolo_model(MODEL_PATH)
+        model = load_pt_model(MODEL_PATH)
     else:
         raise ValueError(f"{MODEL_TYPE} Model could not be found in {MODEL_PATH}")
 
