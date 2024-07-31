@@ -62,6 +62,7 @@ def process_results(results, model_type, image):
 
 
 def inference():
+    check_directory_content(MODEL_PATH + MODEL_INFERENCE_INPUT)
     try:
         model_type, model = load_model(MODEL_PATH)
     except Exception as e:
