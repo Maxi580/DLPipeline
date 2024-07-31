@@ -16,7 +16,6 @@ services:
 
   data_volume:
     image: busybox
-    restart: "no"
     volumes:
       - data_volume:/data
     command: >
@@ -29,29 +28,28 @@ services:
             "
   inference_volume:
     image: busybox
-    restart: "no"
     volumes:
       - inference_volume:/inference
     command: >
       sh -c "
-              mkdir -p /model
-              mkdir -p /input_images
-              mkdir -p /output_images
+              mkdir -p /inference/model
+              mkdir -p /inference/input_images
+              mkdir -p /inference/output_images
             "
 
   inference:
-    image: busybox
-    restart: "no"
+    build:
+      context: .
+      dockerfile: ./inference/Dockerfile
     volumes:
       - inference_volume:/inference
-    command: >
-      sh -c "
-              mkdir -p /model
-              mkdir -p /input_images
-              mkdir -p /output_images
-            "
+      - env_data:/env_data
+    env_file:
+      - ./.env
+    depends_on:
+      - inference_volume
+      - env_manager
   web:
-    restart: "no"
     build:
       context: .
       dockerfile: ./app/Dockerfile
@@ -71,7 +69,6 @@ services:
       - env_manager
 
   preprocessing:
-    restart: "no"
     build:
       context: .
       dockerfile: ./preprocessing/Dockerfile
@@ -83,9 +80,9 @@ services:
       - ./.env
     depends_on:
       - env_manager
+      - data_volume
 
   augmentation:
-    restart: "no"
     build:
       context: .
       dockerfile: ./augmentation/Dockerfile
@@ -97,19 +94,21 @@ services:
       - ./.env
     depends_on:
       - env_manager
+      - data_volume
 
   model-creation:
-    restart: "no"
     build:
       context: .
       dockerfile: ./model_creation/Dockerfile
     volumes:
+      - env_data:/env_data
       - data_volume:/data
       - ./model_creation:/model_creation #Dev
     env_file:
       - ./.env
     depends_on:
       - env_manager
+      - data_volume
 
 volumes:
   data_volume:

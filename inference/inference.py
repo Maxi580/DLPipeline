@@ -1,11 +1,6 @@
 from ultralytics import YOLO
 import cv2
-import os
-import numpy as np
 from utils import *
-import tensorflow as tf
-import torch
-import onnxruntime as ort
 
 MODEL_PATH = os.getenv('MODEL_PATH')
 MODEL_TYPE = os.getenv('MODEL_TYPE')
@@ -13,37 +8,24 @@ MODEL_INFERENCE_INPUT = os.getenv('MODEL_INFERENCE_INPUT')
 MODEL_INFERENCE_OUTPUT = os.getenv('MODEL_INFERENCE_OUTPUT')
 
 
-def load_model(model_path, model_type):
-    if model_type.lower() == 'yolo':
+def load_yolo_model(model_dir):
+    pt_files = [f for f in os.listdir(model_dir) if f.endswith('.pt')]
+    if not pt_files:
+        raise FileNotFoundError(f"No .pt files found in '{model_dir}'")
+    else:
+        model_path = os.path.join(model_dir, pt_files[0])
         return YOLO(model_path)
-    elif model_type.lower() == 'tensorflow':
-        return tf.saved_model.load(model_path)
-    elif model_type.lower() == 'pytorch':
-        return torch.load(model_path)
-    elif model_type.lower() == 'onnx':
-        return ort.InferenceSession(model_path)
-    else:
-        raise ValueError(f"Unsupported model type: {model_type}")
 
 
-def run_inference(model, image, model_type):
-    if model_type.lower() == 'yolo':
+def run_inference(model, image):
+    if MODEL_TYPE.lower() == 'yolo':
         return model(image)
-    elif model_type.lower() == 'tensorflow':
-        # Implement TensorFlow inference
-        pass
-    elif model_type.lower() == 'pytorch':
-        # Implement PyTorch inference
-        pass
-    elif model_type.lower() == 'onnx':
-        # Implement ONNX inference
-        pass
     else:
-        raise ValueError(f"Unsupported model type: {model_type}")
+        raise ValueError(f"Unsupported model type: {MODEL_TYPE}")
 
 
-def process_results(results, image, model_type):
-    if model_type.lower() == 'yolo':
+def process_results(results, image):
+    if MODEL_TYPE.lower() == 'yolo':
         for result in results:
             boxes = result.boxes.cpu().numpy()
             for box in boxes:
@@ -62,10 +44,12 @@ def process_results(results, image, model_type):
 
 
 def inference():
-    model = load_model(MODEL_PATH, MODEL_TYPE)
+    if MODEL_TYPE.lower() == 'yolo':
+        model = load_yolo_model(MODEL_PATH)
+    else:
+        raise ValueError(f"{MODEL_TYPE} Model could not be found in {MODEL_PATH}")
 
     os.makedirs(MODEL_INFERENCE_OUTPUT, exist_ok=True)
-
     for filename in os.listdir(MODEL_INFERENCE_INPUT):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             input_path = os.path.join(MODEL_INFERENCE_INPUT, filename)
@@ -74,9 +58,9 @@ def inference():
             image = cv2.imread(input_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-            results = run_inference(model, image, MODEL_TYPE)
+            results = run_inference(model, image)
 
-            image = process_results(results, image, MODEL_TYPE)
+            image = process_results(results, image)
 
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             cv2.imwrite(output_path, image)
