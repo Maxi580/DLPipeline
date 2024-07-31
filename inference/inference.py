@@ -3,29 +3,47 @@ import cv2
 from utils import *
 
 MODEL_PATH = os.getenv('MODEL_PATH')
-MODEL_TYPE = os.getenv('MODEL_TYPE')
 MODEL_INFERENCE_INPUT = os.getenv('MODEL_INFERENCE_INPUT')
 MODEL_INFERENCE_OUTPUT = os.getenv('MODEL_INFERENCE_OUTPUT')
 
-
-def load_pt_model(model_dir):
-    pt_files = [f for f in os.listdir(model_dir) if f.endswith('.pt')]
-    if not pt_files:
-        return False
-    else:
-        model_path = os.path.join(model_dir, pt_files[0])
-        return YOLO(model_path)
+YOLO_MODEL_TYPE = 'yolo'
 
 
-def run_inference(model, image):
-    if MODEL_TYPE.lower() == 'yolo':
+def load_model(model_dir):
+    # Dictionary mapping file extensions to model types and loading functions
+    model_types = {
+        '.pt': (YOLO_MODEL_TYPE, lambda path: YOLO(path)),
+        # '.pth': ('pytorch', lambda path: torch.load(path)),
+        # '.h5': ('tensorflow', lambda path: tf.keras.models.load_model(path)),
+        # '.pb': ('tensorflow', lambda path: tf.saved_model.load(path)),
+        # '.onnx': ('onnx', lambda path: onnxruntime.InferenceSession(path)),
+    }
+
+    for filename in os.listdir(model_dir):
+        file_path = os.path.join(model_dir, filename)
+        _, extension = os.path.splitext(filename)
+
+        if extension in model_types:
+            model_type, load_func = model_types[extension]
+            try:
+                model = load_func(file_path)
+                return model_type, model
+            except Exception as e:
+                print(f"Error loading {filename}: {str(e)}")
+                continue
+
+    raise ValueError(f"No supported model file found in {model_dir}")
+
+
+def run_inference(model, model_type, image):
+    if model_type == YOLO_MODEL_TYPE:
         return model(image)
     else:
-        raise ValueError(f"Unsupported model type: {MODEL_TYPE}")
+        raise ValueError(f"Unsupported model type: {model_type}")
 
 
-def process_results(results, image):
-    if MODEL_TYPE.lower() == 'yolo':
+def process_results(results, model_type, image):
+    if model_type == YOLO_MODEL_TYPE:
         for result in results:
             boxes = result.boxes.cpu().numpy()
             for box in boxes:
@@ -44,10 +62,10 @@ def process_results(results, image):
 
 
 def inference():
-    if MODEL_TYPE.lower() == 'yolo':
-        model = load_pt_model(MODEL_PATH)
-    else:
-        raise ValueError(f"{MODEL_TYPE} Model could not be found in {MODEL_PATH}")
+    try:
+        model_type, model = load_model(MODEL_PATH)
+    except Exception as e:
+        raise ValueError(f"No Model File Found: {e}")
 
     os.makedirs(MODEL_INFERENCE_OUTPUT, exist_ok=True)
     for filename in os.listdir(MODEL_INFERENCE_INPUT):
@@ -58,9 +76,8 @@ def inference():
             image = cv2.imread(input_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-            results = run_inference(model, image)
-
-            image = process_results(results, image)
+            results = run_inference(model, model_type, image)
+            image = process_results(results, model_type, image)
 
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             cv2.imwrite(output_path, image)
