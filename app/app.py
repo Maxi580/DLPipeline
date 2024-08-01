@@ -19,7 +19,6 @@ def config_page():
             'YOLO_EPOCHS': request.form['YOLO_EPOCHS'],
             'FRCNN_EPOCHS': request.form['FRCNN_EPOCHS'],
             'BATCH_SIZE': request.form['BATCH_SIZE'],
-            'MODEL_WITH_PIXMIX_AUGMENTATION': request.form['MODEL_WITH_PIXMIX_AUGMENTATION'],
             'PIXMIX_AUGMENTATION_PROBABILITY': request.form['PIXMIX_AUGMENTATION_PROBABILITY'],
             'PIXMIX_MIXING_PROBABILITY': request.form['PIXMIX_MIXING_PROBABILITY'],
             'PIXMIX_MIXING_FACTOR_LOWER_RANGE': request.form['PIXMIX_MIXING_FACTOR_LOWER_RANGE'],
@@ -55,13 +54,19 @@ def config_page():
             'EARLY_STOPPING_PATIENCE': request.form['EARLY_STOPPING_PATIENCE'],
             'EARLY_STOPPING_MIN_DELTA': request.form['EARLY_STOPPING_MIN_DELTA'],
         }
-        yolo_models = ','.join(config['YOLO_MODELS'])
+        #  Add commas between arrays and format them as string
+        if isinstance(config['YOLO_MODELS'], list):
+            yolo_models = ','.join(config['YOLO_MODELS'])
+        else:
+            yolo_models = config['YOLO_MODELS']
         config['YOLO_MODELS'] = yolo_models
-        frcnn_models = ','.join(config['FRCNN_MODELS'])
+        if isinstance(config['FRCNN_MODELS'], list):
+            frcnn_models = ','.join(config['FRCNN_MODELS'])
+        else:
+            frcnn_models = config['FRCNN_MODELS']
         config['FRCNN_MODELS'] = frcnn_models
 
         env_path = os.path.join(ENV_PATH)
-
         existing_config = {}
         if os.path.exists(env_path):
             with open(env_path, 'r') as f:

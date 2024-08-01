@@ -62,16 +62,18 @@ def create_dataset_yaml(dataset_path, output_path):
 
 def create_yolo_model(input_path, data_yaml_path, name):
     for yolo_model in YOLO_MODELS:
-        model = YOLO(yolo_model)
+        if yolo_model:
+            model = YOLO(yolo_model)
+            create_dataset_yaml(input_path, data_yaml_path)
 
-        create_dataset_yaml(input_path, data_yaml_path)
-
-        results = model.train(
-            data=data_yaml_path,
-            epochs=YOLO_EPOCHS,
-            imgsz=(IMAGE_WIDTH, IMAGE_HEIGHT),
-            batch=BATCH_SIZE,
-            project=MODEL_OUTPUT_DIR,
-            name=f"{name}_{yolo_model}",
-        )
-        print(f"Model {yolo_model} created: {model} {results}")
+            results = model.train(
+                data=data_yaml_path,
+                epochs=YOLO_EPOCHS,
+                imgsz=(IMAGE_WIDTH, IMAGE_HEIGHT),
+                batch=BATCH_SIZE,
+                project=MODEL_OUTPUT_DIR,
+                name=f"{name}_{yolo_model}",
+            )
+            print(f"Model {yolo_model} created: {model} {results}")
+        else:
+            print(f"Warning: Please Select a valid YOLO Model.")

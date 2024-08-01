@@ -8,6 +8,9 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision.models.detection import (fasterrcnn_resnet50_fpn, fasterrcnn_mobilenet_v3_large_fpn,
                                           fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_resnet50_fpn_v2)
+from torchvision.models.detection.faster_rcnn import fasterrcnn_resnet50_fpn_v2, FastRCNNPredictor
+from torchvision.models.detection.ssd import ssd300_vgg16
+from torchvision.models.detection.retinanet import retinanet_resnet50_fpn_v2
 from torch.optim.lr_scheduler import StepLR
 import torchvision.transforms as T
 import torch.optim as optim
@@ -15,8 +18,8 @@ import torch.optim as optim
 FRCNN_MODELS = os.getenv('FRCNN_MODELS').split(',')
 PRETRAINED = bool(os.getenv('PRETRAINED'))
 FRCNN_EPOCHS = int(os.getenv('FRCNN_EPOCHS'))
-
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
+
 OPTIMIZER_LEARNING_RATE = float(os.getenv('OPTIMIZER_LEARNING_RATE'))
 OPTIMIZER_MOMENTUM = float(os.getenv('OPTIMIZER_MOMENTUM'))
 OPTIMIZER_WEIGHT_DECAY = float(os.getenv('OPTIMIZER_WEIGHT_DECAY'))
@@ -30,6 +33,8 @@ AVAILABLE_MODELS = {
     'fasterrcnn_mobilenet_v3_large_fpn': torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn,
     'fasterrcnn_mobilenet_v3_large_320_fpn': torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn,
     'fasterrcnn_resnet50_fpn_v2': torchvision.models.detection.fasterrcnn_resnet50_fpn_v2,
+    'ssd300_vgg16': ssd300_vgg16,
+    'retinanet_resnet50_fpn_v2': retinanet_resnet50_fpn_v2,
 }
 
 
@@ -112,17 +117,16 @@ def load_model(model_name, num_classes, pretrained=True):
         raise ValueError(f"Model {model_name} not available. Choose from {list(AVAILABLE_MODELS.keys())}")
 
     if pretrained:
-        model = AVAILABLE_MODELS[model_name](pretrained=True)
+        model = AVAILABLE_MODELS[model_name](weights='DEFAULT')
 
         # represents the number of channels (or depth) of the feature map for each region of interest (RoI) after
         # it has gone through the backbone network and RoI pooling/alignment.
         in_features = model.roi_heads.box_predictor.cls_score.in_features
 
         # Creating a new fully connectedLayers: Replace in_features (input) and num_classes(ouput)
-        model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features,
-                                                                                                   num_classes)
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
     else:
-        model = AVAILABLE_MODELS[model_name](pretrained=False, num_classes=num_classes)
+        model = AVAILABLE_MODELS[model_name](weights=None, num_classes=num_classes)
 
     return model
 
@@ -276,6 +280,10 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
         model.to(device)
         early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE, min_delta=EARLY_STOPPING_MIN_DELTA)
 
+        print(f"Starting training for {rcnn_model}")
+        print(f"Train loader length: {len(train_loader)}")
+        print(f"Val loader length: {len(val_loader)}")
+        print(f"Device: {device}")
         for epoch in range(num_epochs):
             loss = train_one_epoch(model, optimizer, train_loader, device)
 

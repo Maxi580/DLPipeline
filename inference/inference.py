@@ -62,33 +62,32 @@ def process_results(results, model_type, image):
 
 
 def inference():
-    does_exist = check_directory_content(MODEL_PATH + MODEL_INFERENCE_INPUT)
-    if does_exist:
-        try:
-            model_type, model = load_model(MODEL_PATH)
-        except Exception as e:
-            raise ValueError(f"No Model File Found: {e}")
+    try:
+        model_type, model = load_model(MODEL_PATH)
+    except Exception as e:
+        raise ValueError(f"No Model File Found: {e}")
 
-        os.makedirs(MODEL_INFERENCE_OUTPUT, exist_ok=True)
-        for filename in os.listdir(MODEL_INFERENCE_INPUT):
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
-                input_path = os.path.join(MODEL_INFERENCE_INPUT, filename)
-                output_path = os.path.join(MODEL_INFERENCE_OUTPUT, f'detected_{filename}')
+    os.makedirs(MODEL_INFERENCE_OUTPUT, exist_ok=True)
+    for filename in os.listdir(MODEL_INFERENCE_INPUT):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+            input_path = os.path.join(MODEL_INFERENCE_INPUT, filename)
+            output_path = os.path.join(MODEL_INFERENCE_OUTPUT, f'detected_{filename}')
 
-                image = cv2.imread(input_path)
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = cv2.imread(input_path)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-                results = run_inference(model, model_type, image)
-                image = process_results(results, model_type, image)
+            results = run_inference(model, model_type, image)
+            image = process_results(results, model_type, image)
 
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                cv2.imwrite(output_path, image)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(output_path, image)
 
-                print(f"Processed: {filename}")
+            print(f"Processed: {filename}")
 
-        print("All images processed!")
+    print("All images processed!")
 
 
 if __name__ == '__main__':
-    check_directory_content(MODEL_PATH + MODEL_INFERENCE_INPUT)
-    inference()
+    does_exist = check_directory_content(MODEL_PATH + MODEL_INFERENCE_INPUT)
+    if does_exist:
+        inference()

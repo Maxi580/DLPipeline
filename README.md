@@ -15,6 +15,9 @@
 * `docker-compose build --no-cache`
 * `docker-compose down -v`
 * `docker-compose up --build`
+* Reset Single Services 
+* `docker-compose build model-creation`
+* `docker-compose up -d --force-recreate model-creation`
 
 # Copy Data onto Data Volume
 * `docker cp /path/to/local/image containerId:/path/in/container/` (
