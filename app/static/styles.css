@@ -75,3 +75,30 @@ button {
 button:hover {
     background-color: #45a049;
 }
+
+.model-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.model-option input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+.model-option label {
+    margin-bottom: 0;
+    display: inline;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+label {
+    display: inline-block;
+    margin-bottom: 5px;
+    color: #555;
+}

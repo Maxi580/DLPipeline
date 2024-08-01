@@ -1,11 +1,10 @@
 import yaml
 from ultralytics import YOLO
 import os
-import json
 
 IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
 IMAGE_HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
-YOLO_MODEL = os.getenv('YOLO_MODEL')
+YOLO_MODELS = os.getenv('YOLO_MODELS').split(',')
 EPOCHS = int(os.getenv('EPOCHS'))
 BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 
@@ -62,17 +61,17 @@ def create_dataset_yaml(dataset_path, output_path):
 
 
 def create_yolo_model(input_path, data_yaml_path, name):
-    model = YOLO(YOLO_MODEL)
+    for yolo_model in YOLO_MODELS:
+        model = YOLO(yolo_model)
 
-    create_dataset_yaml(input_path, data_yaml_path)
+        create_dataset_yaml(input_path, data_yaml_path)
 
-    results = model.train(
-        data=data_yaml_path,
-        epochs=EPOCHS,
-        imgsz=(IMAGE_WIDTH, IMAGE_HEIGHT),
-        batch=BATCH_SIZE,
-        project=MODEL_OUTPUT_DIR,
-        name=name,
-    )
-
-    return model, results
+        results = model.train(
+            data=data_yaml_path,
+            epochs=EPOCHS,
+            imgsz=(IMAGE_WIDTH, IMAGE_HEIGHT),
+            batch=BATCH_SIZE,
+            project=MODEL_OUTPUT_DIR,
+            name=f"{name}_{yolo_model}",
+        )
+        print(f"Model {yolo_model} created: {model} {results}")

@@ -103,7 +103,7 @@ services:
     volumes:
       - env_data:/env_data
       - data_volume:/data
-      - ./model_creation:/model_creation #Dev
+      - ./model_creation:/model_creation:delegated #Dev
     env_file:
       - ./.env
     depends_on:

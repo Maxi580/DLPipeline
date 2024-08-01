@@ -9,17 +9,19 @@ app = Flask(__name__)
 def config_page():
     if request.method == 'POST':
         config = {
-            'MODEL_WITHOUT_AUGMENTATION': request.form['MODEL_WITHOUT_AUGMENTATION'],
-            'CREATE_YOLO_MODEL': request.form['CREATE_YOLO_MODEL'],
-            'YOLO_MODEL': request.form['YOLO_MODEL'],
+            'YOLO_WITH_AUGMENTATION': request.form['YOLO_WITH_AUGMENTATION'],
+            'YOLO_WITHOUT_AUGMENTATION': request.form['YOLO_WITHOUT_AUGMENTATION'],
+            'FASTER_RCNN_WITH_AUGMENTATION': request.form['FASTER_RCNN_WITH_AUGMENTATION'],
+            'FASTER_RCNN_WITHOUT_AUGMENTATION': request.form['FASTER_RCNN_WITHOUT_AUGMENTATION'],
+            'YOLO_MODELS': request.form.getlist('MODELS[]'),
             'NUMBER_OF_AUGMENTED_IMAGES': request.form['NUMBER_OF_AUGMENTED_IMAGES'],
             'EPOCHS': request.form['EPOCHS'],
             'BATCH_SIZE': request.form['BATCH_SIZE'],
-            'PIXMIX_AUGMENTATION': request.form['PIXMIX_AUGMENTATION'],
+            'MODEL_WITH_PIXMIX_AUGMENTATION': request.form['MODEL_WITH_PIXMIX_AUGMENTATION'],
             'PIXMIX_AUGMENTATION_PROBABILITY': request.form['PIXMIX_AUGMENTATION_PROBABILITY'],
             'PIXMIX_MIXING_PROBABILITY': request.form['PIXMIX_MIXING_PROBABILITY'],
-            'PIXMIX_MIXING_FACTOR_LOWER_RANGE': request.form['MIXING_FACTOR_LOWER_RANGE'],
-            'PIXMIX_MIXING_FACTOR_UPPER_RANGE': request.form['MIXING_FACTOR_UPPER_RANGE'],
+            'PIXMIX_MIXING_FACTOR_LOWER_RANGE': request.form['PIXMIX_MIXING_FACTOR_LOWER_RANGE'],
+            'PIXMIX_MIXING_FACTOR_UPPER_RANGE': request.form['PIXMIX_MIXING_FACTOR_UPPER_RANGE'],
             'PIXMIX_ENABLE_HORIZONTAL_FLIP': request.form['PIXMIX_ENABLE_HORIZONTAL_FLIP'],
             'PIXMIX_ENABLE_VERTICAL_FLIP': request.form['PIXMIX_ENABLE_VERTICAL_FLIP'],
             'PIXMIX_ENABLE_ROTATE': request.form['PIXMIX_ENABLE_ROTATE'],
@@ -43,8 +45,17 @@ def config_page():
             'PIXMIX_ENABLE_RANDOM_FOG': request.form['PIXMIX_ENABLE_RANDOM_FOG'],
             'PIXMIX_ENABLE_RANDOM_SNOW': request.form['PIXMIX_ENABLE_RANDOM_SNOW'],
             'PIXMIX_ENABLE_RANDOM_SHADOW': request.form['PIXMIX_ENABLE_RANDOM_SHADOW'],
-            'PIXMIX_ENABLE_RANDOM_SUNFLARE': request.form['PIXMIX_ENABLE_RANDOM_SUNFLARE'],
+            'OPTIMIZER_LEARNING_RATE': request.form['OPTIMIZER_LEARNING_RATE'],
+            'OPTIMIZER_MOMENTUM': request.form['OPTIMIZER_MOMENTUM'],
+            'OPTIMIZER_WEIGHT_DECAY': request.form['OPTIMIZER_WEIGHT_DECAY'],
+            'SCHEDULER_STEP_SIZE': request.form['SCHEDULER_STEP_SIZE'],
+            'SCHEDULER_GAMMA': request.form['SCHEDULER_GAMMA'],
+            'EARLY_STOPPING_PATIENCE': request.form['EARLY_STOPPING_PATIENCE'],
+            'EARLY_STOPPING_MIN_DELTA': request.form['EARLY_STOPPING_MIN_DELTA'],
         }
+        yolo_models = ','.join(config['YOLO_MODELS'])
+        config['YOLO_MODELS'] = yolo_models
+
         env_path = os.path.join(ENV_PATH)
 
         existing_config = {}
