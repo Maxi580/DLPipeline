@@ -13,9 +13,11 @@ def config_page():
             'YOLO_WITHOUT_AUGMENTATION': request.form['YOLO_WITHOUT_AUGMENTATION'],
             'FASTER_RCNN_WITH_AUGMENTATION': request.form['FASTER_RCNN_WITH_AUGMENTATION'],
             'FASTER_RCNN_WITHOUT_AUGMENTATION': request.form['FASTER_RCNN_WITHOUT_AUGMENTATION'],
+            'FRCNN_MODELS': request.form['FRCNN_MODELS[]'],
             'YOLO_MODELS': request.form.getlist('MODELS[]'),
             'NUMBER_OF_AUGMENTED_IMAGES': request.form['NUMBER_OF_AUGMENTED_IMAGES'],
-            'EPOCHS': request.form['EPOCHS'],
+            'YOLO_EPOCHS': request.form['YOLO_EPOCHS'],
+            'FRCNN_EPOCHS': request.form['FRCNN_EPOCHS'],
             'BATCH_SIZE': request.form['BATCH_SIZE'],
             'MODEL_WITH_PIXMIX_AUGMENTATION': request.form['MODEL_WITH_PIXMIX_AUGMENTATION'],
             'PIXMIX_AUGMENTATION_PROBABILITY': request.form['PIXMIX_AUGMENTATION_PROBABILITY'],
@@ -55,6 +57,8 @@ def config_page():
         }
         yolo_models = ','.join(config['YOLO_MODELS'])
         config['YOLO_MODELS'] = yolo_models
+        frcnn_models = ','.join(config['FRCNN_MODELS'])
+        config['FRCNN_MODELS'] = frcnn_models
 
         env_path = os.path.join(ENV_PATH)
 

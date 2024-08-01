@@ -12,8 +12,9 @@ from torch.optim.lr_scheduler import StepLR
 import torchvision.transforms as T
 import torch.optim as optim
 
-RCNN_MODEL_NAME = os.getenv('RCNN_MODEL_NAME')
+FRCNN_MODELS = os.getenv('FRCNN_MODELS').split(',')
 PRETRAINED = bool(os.getenv('PRETRAINED'))
+FRCNN_EPOCHS = int(os.getenv('FRCNN_EPOCHS'))
 
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
 OPTIMIZER_LEARNING_RATE = float(os.getenv('OPTIMIZER_LEARNING_RATE'))
@@ -263,31 +264,32 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
         val_image_dir=val_image_dir,
         val_label_dir=val_label_dir
     )
-    model = load_model(RCNN_MODEL_NAME, get_num_classes(train_label_dir), PRETRAINED)
+    for rcnn_model in FRCNN_MODELS:
+        model = load_model(rcnn_model, get_num_classes(train_label_dir), PRETRAINED)
 
-    params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = optim.SGD(params, lr=OPTIMIZER_LEARNING_RATE, momentum=OPTIMIZER_MOMENTUM,
-                          weight_decay=OPTIMIZER_WEIGHT_DECAY)
-    scheduler = StepLR(optimizer, step_size=SCHEDULER_STEP_SIZE, gamma=SCHEDULER_GAMMA)
-    num_epochs = 10
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    model.to(device)
-    early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE, min_delta=EARLY_STOPPING_MIN_DELTA)
+        params = [p for p in model.parameters() if p.requires_grad]
+        optimizer = optim.SGD(params, lr=OPTIMIZER_LEARNING_RATE, momentum=OPTIMIZER_MOMENTUM,
+                              weight_decay=OPTIMIZER_WEIGHT_DECAY)
+        scheduler = StepLR(optimizer, step_size=SCHEDULER_STEP_SIZE, gamma=SCHEDULER_GAMMA)
+        num_epochs = FRCNN_EPOCHS
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        model.to(device)
+        early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE, min_delta=EARLY_STOPPING_MIN_DELTA)
 
-    for epoch in range(num_epochs):
-        loss = train_one_epoch(model, optimizer, train_loader, device)
+        for epoch in range(num_epochs):
+            loss = train_one_epoch(model, optimizer, train_loader, device)
 
-        mAP = evaluate(model, val_loader, device)
-        scheduler.step()
+            mAP = evaluate(model, val_loader, device)
+            scheduler.step()
 
-        output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
-        save_model(model, epoch, optimizer, loss, output_dir)
-        print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
+            output_dir = os.path.join(MODEL_OUTPUT_DIR, f"{name}_{model}")
+            save_model(model, epoch, optimizer, loss, output_dir)
+            print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
-        early_stopping(mAP)
-        if early_stopping.early_stop:
-            print("Early stopping")
-            break
+            early_stopping(mAP)
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
 
-    print(f"Faster RCNN has finished")
+        print(f"Faster RCNN {model} has finished")
 

@@ -172,7 +172,13 @@
                         <label for="MODEL_YOLOV10X_YAML">YOLO v10 Extra Large (.YAML)</label>
                     </div>
                 </div>
-
+                <div class="form-group">
+                    <h4>Faster RCNN Models</h4>
+                    <div class="model-option">
+                        <input type="checkbox" id="fasterrcnn_resnet50_fpn" name="FRCNN_MODELS[]" value="fasterrcnn_resnet50_fpn">
+                        <label for="fasterrcnn_resnet50_fpn">fasterrcnn_resnet50_fpn</label>
+                    </div>
+                </div>
 
                 <div class="pixmix-section">
                     <h3>Pixmix Augmentation</h3>
@@ -409,8 +415,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="EPOCHS">Epochs:</label>
-                    <input type="number" id="EPOCHS" name="EPOCHS"
+                    <label for="YOLO_EPOCHS">YOLO Epochs:</label>
+                    <input type="number" id="YOLO_EPOCHS" name="YOLO_EPOCHS"
+                           min="0" max="1000" step="1" value="20">
+                </div>
+                <div class="form-group">
+                    <label for="FRCNN_EPOCHS">Faster RCNN Epochs:</label>
+                    <input type="number" id="FRCNN_EPOCHS" name="FRCNN_EPOCHS"
                            min="0" max="1000" step="1" value="20">
                 </div>
 
