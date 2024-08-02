@@ -13,6 +13,17 @@
         <form id="configForm" method="POST" action="{{ url_for('config_page') }}">
             <h2>Neural Network Configuration</h2>
             <div class="yolo-section">
+                <h3>Preprocessing Image Format</h3>
+                    <div class="form-group">
+                        <label for="IMAGE_WIDTH">Image Width:</label>
+                        <input type="number" id="IMAGE_WIDTH" name="IMAGE_WIDTH"
+                               min="0" max="10000" step="1" value="640">
+                    </div>
+                    <div class="form-group">
+                        <label for="IMAGE_HEIGHT">Image Height:</label>
+                        <input type="number" id="IMAGE_HEIGHT" name="IMAGE_HEIGHT"
+                               min="0" max="10000" step="1" value="640">
+                    </div>
                 <h3>Model Selection</h3>
                 <div class="form-group">
                     <label for="YOLO_WITH_AUGMENTATION">Create YOLO Model(s) using Augmentation:</label>
@@ -45,130 +56,130 @@
                 <div class="form-group">
                     <h4>YOLOv5 Detection</h4>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5N" name="MODELS[]" value="yolov5n-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5N" name="YOLO_MODELS[]" value="yolov5n-ultralytics">
                         <label for="MODEL_YOLOV5N">YOLOv5n-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5S" name="MODELS[]" value="yolov5s-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5S" name="YOLO_MODELS[]" value="yolov5s-ultralytics">
                         <label for="MODEL_YOLOV5S">YOLOv5s-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5M" name="MODELS[]" value="yolov5m-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5M" name="YOLO_MODELS[]" value="yolov5m-ultralytics">
                         <label for="MODEL_YOLOV5M">YOLOv5m-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5L" name="MODELS[]" value="yolov5l-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5L" name="YOLO_MODELS[]" value="yolov5l-ultralytics">
                         <label for="MODEL_YOLOV5L">YOLOv5l-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5X" name="MODELS[]" value="yolov5x-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5X" name="YOLO_MODELS[]" value="yolov5x-ultralytics">
                         <label for="MODEL_YOLOV5X">YOLOv5x-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5N6" name="MODELS[]" value="yolov5n6-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5N6" name="YOLO_MODELS[]" value="yolov5n6-ultralytics">
                         <label for="MODEL_YOLOV5N6">YOLOv5n6-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5S6" name="MODELS[]" value="yolov5s6-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5S6" name="YOLO_MODELS[]" value="yolov5s6-ultralytics">
                         <label for="MODEL_YOLOV5S6">YOLOv5s6-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5M6" name="MODELS[]" value="yolov5m6-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5M6" name="YOLO_MODELS[]" value="yolov5m6-ultralytics">
                         <label for="MODEL_YOLOV5M6">YOLOv5m6-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5L6" name="MODELS[]" value="yolov5l6-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5L6" name="YOLO_MODELS[]" value="yolov5l6-ultralytics">
                         <label for="MODEL_YOLOV5L6">YOLOv5l6-ultralytics</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV5X6" name="MODELS[]" value="yolov5x6-ultralytics">
+                        <input type="checkbox" id="MODEL_YOLOV5X6" name="YOLO_MODELS[]" value="yolov5x6-ultralytics">
                         <label for="MODEL_YOLOV5X6">YOLOv5x6-ultralytics</label>
                     </div>
 
                     <h4>YOLOv8 Detection Basic</h4>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8N" name="MODELS[]" value="yolov8n">
+                        <input type="checkbox" id="MODEL_YOLOV8N" name="YOLO_MODELS[]" value="yolov8n">
                         <label for="MODEL_YOLOV8N">YOLOv8 Nano</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8S" name="MODELS[]" value="yolov8s">
+                        <input type="checkbox" id="MODEL_YOLOV8S" name="YOLO_MODELS[]" value="yolov8s">
                         <label for="MODEL_YOLOV8S">YOLOv8 Small</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8M" name="MODELS[]" value="yolov8m">
+                        <input type="checkbox" id="MODEL_YOLOV8M" name="YOLO_MODELS[]" value="yolov8m">
                         <label for="MODEL_YOLOV8M">YOLOv8 Medium</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8L" name="MODELS[]" value="yolov8l">
+                        <input type="checkbox" id="MODEL_YOLOV8L" name="YOLO_MODELS[]" value="yolov8l">
                         <label for="MODEL_YOLOV8L">YOLOv8 Large</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8X" name="MODELS[]" value="yolov8x">
+                        <input type="checkbox" id="MODEL_YOLOV8X" name="YOLO_MODELS[]" value="yolov8x">
                         <label for="MODEL_YOLOV8X">YOLOv8 Extra Large</label>
                     </div>
 
                     <h4>YOLOv8 Detection Extended</h4>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8N6" name="MODELS[]" value="yolov8n6">
+                        <input type="checkbox" id="MODEL_YOLOV8N6" name="YOLO_MODELS[]" value="yolov8n6">
                         <label for="MODEL_YOLOV8N6">YOLOv8n6</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8S6" name="MODELS[]" value="yolov8s6">
+                        <input type="checkbox" id="MODEL_YOLOV8S6" name="YOLO_MODELS[]" value="yolov8s6">
                         <label for="MODEL_YOLOV8S6">YOLOv8s6</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8M6" name="MODELS[]" value="yolov8m6">
+                        <input type="checkbox" id="MODEL_YOLOV8M6" name="YOLO_MODELS[]" value="yolov8m6">
                         <label for="MODEL_YOLOV8M6">YOLOv8m6</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8L6" name="MODELS[]" value="yolov8l6">
+                        <input type="checkbox" id="MODEL_YOLOV8L6" name="YOLO_MODELS[]" value="yolov8l6">
                         <label for="MODEL_YOLOV8L6">YOLOv8l6</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV8X6" name="MODELS[]" value="yolov8x6">
+                        <input type="checkbox" id="MODEL_YOLOV8X6" name="YOLO_MODELS[]" value="yolov8x6">
                         <label for="MODEL_YOLOV8X6">YOLOv8x6</label>
                     </div>
 
                     <h4>YOLOv10 Pre Trained</h4>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10N_PT" name="MODELS[]" value="yolov10n.pt">
+                        <input type="checkbox" id="MODEL_YOLOV10N_PT" name="YOLO_MODELS[]" value="yolov10n.pt">
                         <label for="MODEL_YOLOV10N_PT">YOLO v10 Nano (.PT)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10S_PT" name="MODELS[]" value="yolov10s.pt">
+                        <input type="checkbox" id="MODEL_YOLOV10S_PT" name="YOLO_MODELS[]" value="yolov10s.pt">
                         <label for="MODEL_YOLOV10S_PT">YOLO v10 Small (.PT)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10M_PT" name="MODELS[]" value="yolov10m.pt">
+                        <input type="checkbox" id="MODEL_YOLOV10M_PT" name="YOLO_MODELS[]" value="yolov10m.pt">
                         <label for="MODEL_YOLOV10M_PT">YOLO v10 Medium (.PT)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10L_PT" name="MODELS[]" value="yolov10l.pt">
+                        <input type="checkbox" id="MODEL_YOLOV10L_PT" name="YOLO_MODELS[]" value="yolov10l.pt">
                         <label for="MODEL_YOLOV10L_PT">YOLO v10 Large (.PT)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10X_PT" name="MODELS[]" value="yolov10x.pt">
+                        <input type="checkbox" id="MODEL_YOLOV10X_PT" name="YOLO_MODELS[]" value="yolov10x.pt">
                         <label for="MODEL_YOLOV10X_PT">YOLO v10 Extra Large (.PT)</label>
                     </div>
                      <h4>YOLOv10 NOT Pre Trained</h4>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10N_YAML" name="MODELS[]" value="yolov10n.yaml">
+                        <input type="checkbox" id="MODEL_YOLOV10N_YAML" name="YOLO_MODELS[]" value="yolov10n.yaml">
                         <label for="MODEL_YOLOV10N_YAML">YOLO v10 Nano (.YAML)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10S_YAML" name="MODELS[]" value="yolov10s.yaml">
+                        <input type="checkbox" id="MODEL_YOLOV10S_YAML" name="YOLO_MODELS[]" value="yolov10s.yaml">
                         <label for="MODEL_YOLOV10S_YAML">YOLO v10 Small (.YAML)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10M_YAML" name="MODELS[]" value="yolov10m.yaml">
+                        <input type="checkbox" id="MODEL_YOLOV10M_YAML" name="YOLO_MODELS[]" value="yolov10m.yaml">
                         <label for="MODEL_YOLOV10M_YAML">YOLO v10 Medium (.YAML)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10L_YAML" name="MODELS[]" value="yolov10l.yaml">
+                        <input type="checkbox" id="MODEL_YOLOV10L_YAML" name="YOLO_MODELS[]" value="yolov10l.yaml">
                         <label for="MODEL_YOLOV10L_YAML">YOLO v10 Large (.YAML)</label>
                     </div>
                     <div class="model-option">
-                        <input type="checkbox" id="MODEL_YOLOV10X_YAML" name="MODELS[]" value="yolov10x.yaml">
+                        <input type="checkbox" id="MODEL_YOLOV10X_YAML" name="YOLO_MODELS[]" value="yolov10x.yaml">
                         <label for="MODEL_YOLOV10X_YAML">YOLO v10 Extra Large (.YAML)</label>
                     </div>
                 </div>

@@ -9,12 +9,14 @@ app = Flask(__name__)
 def config_page():
     if request.method == 'POST':
         config = {
+            'IMAGE_WIDTH': request.form['IMAGE_WIDTH'],
+            'IMAGE_HEIGHT': request.form['IMAGE_HEIGHT'],
             'YOLO_WITH_AUGMENTATION': request.form['YOLO_WITH_AUGMENTATION'],
             'YOLO_WITHOUT_AUGMENTATION': request.form['YOLO_WITHOUT_AUGMENTATION'],
             'FASTER_RCNN_WITH_AUGMENTATION': request.form['FASTER_RCNN_WITH_AUGMENTATION'],
             'FASTER_RCNN_WITHOUT_AUGMENTATION': request.form['FASTER_RCNN_WITHOUT_AUGMENTATION'],
-            'FRCNN_MODELS': request.form['FRCNN_MODELS[]'],
-            'YOLO_MODELS': request.form.getlist('MODELS[]'),
+            'FRCNN_MODELS': request.form.getlist('FRCNN_MODELS[]'),
+            'YOLO_MODELS': request.form.getlist('YOLO_MODELS[]'),
             'NUMBER_OF_AUGMENTED_IMAGES': request.form['NUMBER_OF_AUGMENTED_IMAGES'],
             'YOLO_EPOCHS': request.form['YOLO_EPOCHS'],
             'FRCNN_EPOCHS': request.form['FRCNN_EPOCHS'],
