@@ -66,12 +66,13 @@ def create_yolo_model(input_path, data_yaml_path, name):
             model = YOLO(yolo_model)
             create_dataset_yaml(input_path, data_yaml_path)
 
+            output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
             results = model.train(
                 data=data_yaml_path,
                 epochs=YOLO_EPOCHS,
                 imgsz=(IMAGE_WIDTH, IMAGE_HEIGHT),
                 batch=YOLO_BATCH_SIZE,
-                project=MODEL_OUTPUT_DIR,
+                project=output_dir,
                 name=f"{name}_{yolo_model}",
             )
             print(f"Model {yolo_model} created: {model} {results}")

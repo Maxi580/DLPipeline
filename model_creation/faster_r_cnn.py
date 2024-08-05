@@ -47,6 +47,7 @@ class CustomDataset(Dataset):
         self.label_dir = label_dir
         self.transform = transform
         self.image_files = sorted([f for f in os.listdir(image_dir) if f.endswith(('.png', '.jpg', '.jpeg'))])
+        print(f"Found {len(self.image_files)} images in {image_dir}")
 
     def __len__(self):
         return len(self.image_files)
@@ -198,6 +199,10 @@ def calculate_mAP(all_predictions, all_targets, iou_threshold):
             ap = calculate_average_precision(class_pred_scores, correct)
             ap_per_class[class_id.item()].append(ap)
 
+    if len(ap_per_class) == 0:
+        print("Warning: No valid predictions for any class!")
+        return 0.0
+
     mAP = sum(sum(aps) / len(aps) for aps in ap_per_class.values()) / len(ap_per_class)
     return mAP
 
@@ -248,18 +253,19 @@ def load_dataset(train_image_dir, train_label_dir, val_image_dir, val_label_dir)
     return train_loader, val_loader
 
 
-def save_model(model, epoch, optimizer, loss, save_dir):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+def save_model(model, epoch, optimizer, loss, name):
+    output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    save_path = os.path.join(save_dir, f"model_epoch_{epoch}.pth")
+    output_path = os.path.join(output_dir, f"{name}.pth")
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': loss,
-    }, save_path)
-    print(f"Model saved to {save_path}")
+    }, output_path)
+    print(f"Model saved to {output_path}")
 
 
 def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, val_label_dir, name):
@@ -293,8 +299,7 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
                 mAP = evaluate(model, val_loader, device)
                 scheduler.step()
 
-                output_dir = os.path.join(MODEL_OUTPUT_DIR, f"{name}_{model}")
-                save_model(model, epoch, optimizer, loss, output_dir)
+                save_model(model, epoch, optimizer, loss, f"{name}_{model}")
                 print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
                 early_stopping(mAP)
