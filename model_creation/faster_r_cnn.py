@@ -254,7 +254,7 @@ def load_dataset(train_image_dir, train_label_dir, val_image_dir, val_label_dir)
     return train_loader, val_loader
 
 
-def save_model(model, epoch, optimizer, loss, name):
+def save_model(model, epoch, optimizer, loss, name, architecture):
     output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -264,6 +264,7 @@ def save_model(model, epoch, optimizer, loss, name):
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
+        'architecture': architecture,
         'loss': loss,
     }, output_path)
     print(f"Model saved to {output_path}")
@@ -300,7 +301,7 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
                 mAP = evaluate(model, val_loader, device)
                 scheduler.step()
 
-                save_model(model, epoch, optimizer, loss, f"{name}_{rcnn_model}")
+                save_model(model, epoch, optimizer, loss, f"{name}_{rcnn_model}", rcnn_model)
                 print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
                 early_stopping(mAP)
