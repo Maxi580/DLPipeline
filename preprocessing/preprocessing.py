@@ -181,19 +181,16 @@ def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
                 print(f"Error: Missing coordinate in CSV for {image_name}: {e}")
                 continue
 
-            # Convert to YOLO format
             x_center = (x_min + x_max) / (2 * IMAGE_WIDTH)
             y_center = (y_min + y_max) / (2 * IMAGE_HEIGHT)
             width = (x_max - x_min) / IMAGE_WIDTH
             height = (y_max - y_min) / IMAGE_HEIGHT
 
-            # Ensure values are within [0, 1] range
             x_center = max(0, min(1, int(x_center)))
             y_center = max(0, min(1, int(y_center)))
             width = max(0, min(1, int(width)))
             height = max(0, min(1, int(height)))
 
-            # Write to YOLO file
             yolo_file.write(f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}\n")
 
         if yolo_file:
@@ -203,6 +200,7 @@ def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
 
 
 def format_annotations(input_directory, output_directory):
+    """Detects annotation format and converts this format to standard yolo txt files"""
     for annotation in os.listdir(input_directory):
         name = os.path.splitext(os.path.basename(annotation))[0]
         output_file = os.path.join(output_directory, f"{name}.txt")
