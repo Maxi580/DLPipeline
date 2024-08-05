@@ -270,35 +270,38 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
         val_label_dir=val_label_dir
     )
     for rcnn_model in FRCNN_MODELS:
-        model = load_model(rcnn_model, get_num_classes(train_label_dir), PRETRAINED)
+        if rcnn_model:
+            model = load_model(rcnn_model, get_num_classes(train_label_dir), PRETRAINED)
 
-        params = [p for p in model.parameters() if p.requires_grad]
-        optimizer = optim.SGD(params, lr=OPTIMIZER_LEARNING_RATE, momentum=OPTIMIZER_MOMENTUM,
-                              weight_decay=OPTIMIZER_WEIGHT_DECAY)
-        scheduler = StepLR(optimizer, step_size=SCHEDULER_STEP_SIZE, gamma=SCHEDULER_GAMMA)
-        num_epochs = FRCNN_EPOCHS
-        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        model.to(device)
-        early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE, min_delta=EARLY_STOPPING_MIN_DELTA)
 
-        print(f"Starting training for {rcnn_model}")
-        print(f"Train loader length: {len(train_loader)}")
-        print(f"Val loader length: {len(val_loader)}")
-        print(f"Device: {device}")
-        for epoch in range(num_epochs):
-            loss = train_one_epoch(model, optimizer, train_loader, device)
+            params = [p for p in model.parameters() if p.requires_grad]
+            optimizer = optim.SGD(params, lr=OPTIMIZER_LEARNING_RATE, momentum=OPTIMIZER_MOMENTUM,
+                                  weight_decay=OPTIMIZER_WEIGHT_DECAY)
+            scheduler = StepLR(optimizer, step_size=SCHEDULER_STEP_SIZE, gamma=SCHEDULER_GAMMA)
+            num_epochs = FRCNN_EPOCHS
+            device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+            model.to(device)
+            early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE, min_delta=EARLY_STOPPING_MIN_DELTA)
 
-            mAP = evaluate(model, val_loader, device)
-            scheduler.step()
+            print(f"Starting training for {rcnn_model}")
+            print(f"Train loader length: {len(train_loader)}")
+            print(f"Val loader length: {len(val_loader)}")
+            print(f"Device: {device}")
+            for epoch in range(num_epochs):
+                loss = train_one_epoch(model, optimizer, train_loader, device)
 
-            output_dir = os.path.join(MODEL_OUTPUT_DIR, f"{name}_{model}")
-            save_model(model, epoch, optimizer, loss, output_dir)
-            print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
+                mAP = evaluate(model, val_loader, device)
+                scheduler.step()
 
-            early_stopping(mAP)
-            if early_stopping.early_stop:
-                print("Early stopping")
-                break
+                output_dir = os.path.join(MODEL_OUTPUT_DIR, f"{name}_{model}")
+                save_model(model, epoch, optimizer, loss, output_dir)
+                print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
-        print(f"Faster RCNN {model} has finished")
+                early_stopping(mAP)
+                if early_stopping.early_stop:
+                    print("Early stopping")
+                    break
 
+            print(f"Faster RCNN {model} has finished")
+        else:
+            print(f"Warning: Please Select a valid Faster RCNN Model.")
