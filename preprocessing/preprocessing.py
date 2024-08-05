@@ -19,6 +19,14 @@ TXT_YOLO = 'txt-yolo'
 XML_PASCALVOC = 'xml-pascalvoc'
 JSON_COCO = 'json-coco'
 CSV = 'csv'
+COORD_VARIATIONS = {
+    'x_min': ['x_min', 'xmin', 'x1', 'left', 'XMIN', 'Xmin'],
+    'y_min': ['y_min', 'ymin', 'y1', 'top', 'YMIN', 'Ymin'],
+    'x_max': ['x_max', 'xmax', 'x2', 'right', 'YMIN', 'Ymin'],
+    'y_max': ['y_max', 'ymax', 'y2', 'bottom', 'YMAX', 'Ymax'],
+    'width': ['width', 'w'],
+    'height': ['height', 'h']
+}
 
 
 def detect_annotation_format(input_directory, file):
@@ -55,8 +63,59 @@ def detect_annotation_format(input_directory, file):
         except json.JSONDecodeError:
             pass
 
+
     elif file_extension == '.csv':
-        return CSV
+        try:
+            with open(file_path, 'r') as f:
+                first_line = f.readline().strip().split(',')
+                second_line = f.readline().strip().split(',')
+                # Check 1: Verify the header
+                expected_headers = ['filename', 'width', 'height', 'class']
+
+                def find_coordinate_index(headers, variations):
+                    for var in variations:
+                        if var in headers:
+                            return headers.index(var)
+                    return -1
+
+                if all(header in first_line for header in expected_headers):
+                    # Check 2: Ensure there's at least one data row
+                    if len(second_line) == len(first_line):
+                        # Check 3: Verify data types and find indices
+                        try:
+                            width_idx = find_coordinate_index(first_line, COORD_VARIATIONS['width'])
+                            height_idx = find_coordinate_index(first_line, COORD_VARIATIONS['height'])
+                            class_idx = first_line.index('class')
+                            x_min_idx = find_coordinate_index(first_line, COORD_VARIATIONS['x_min'])
+                            y_min_idx = find_coordinate_index(first_line, COORD_VARIATIONS['y_min'])
+                            x_max_idx = find_coordinate_index(first_line, COORD_VARIATIONS['x_max'])
+                            y_max_idx = find_coordinate_index(first_line, COORD_VARIATIONS['y_max'])
+
+                            if all(idx != -1 for idx in
+                                   [width_idx, height_idx, x_min_idx, y_min_idx, x_max_idx, y_max_idx]):
+
+                                int(second_line[width_idx])  # width
+                                int(second_line[height_idx])  # height
+                                float(second_line[x_min_idx])  # x_min
+                                float(second_line[y_min_idx])  # y_min
+                                float(second_line[x_max_idx])  # x_max
+                                float(second_line[y_max_idx])  # y_max
+
+                                # Check 4: Ensure bounding box coordinates are within image dimensions
+                                width, height = int(second_line[width_idx]), int(second_line[height_idx])
+                                x_min, y_min = float(second_line[x_min_idx]), float(second_line[y_min_idx])
+                                x_max, y_max = float(second_line[x_max_idx]), float(second_line[y_max_idx])
+
+                                if 0 <= x_min < x_max <= width and 0 <= y_min < y_max <= height:
+                                    # Check 5: Verify class name is non-empty
+                                    if second_line[class_idx].strip():
+                                        return CSV
+
+                        except ValueError:
+                            pass  # Data type check failed
+        except (IOError, IndexError):
+
+            pass
 
 
 def preprocess_txt_yolo_annotation(input_file, output_file):
@@ -154,26 +213,17 @@ def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
             class_id = class_mapping[class_name]
 
             # Parse bounding box coordinates
-            coord_variations = {
-                'x_min': ['x_min', 'xmin', 'x1', 'left', 'XMIN', 'Xmin'],
-                'y_min': ['y_min', 'ymin', 'y1', 'top', 'YMIN', 'Ymin'],
-                'x_max': ['x_max', 'xmax', 'x2', 'right', 'YMIN', 'Ymin'],
-                'y_max': ['y_max', 'ymax', 'y2', 'bottom', 'YMAX', 'Ymax'],
-                'width': ['width', 'w'],
-                'height': ['height', 'h']
-            }
-
             try:
-                x_min = find_coordinate(row, coord_variations['x_min'])
-                y_min = find_coordinate(row, coord_variations['y_min'])
+                x_min = find_coordinate(row, COORD_VARIATIONS['x_min'])
+                y_min = find_coordinate(row, COORD_VARIATIONS['y_min'])
 
                 # Check if we have explicit x_max and y_max, otherwise calculate from width and height
                 try:
-                    x_max = find_coordinate(row, coord_variations['x_max'])
-                    y_max = find_coordinate(row, coord_variations['y_max'])
+                    x_max = find_coordinate(row, COORD_VARIATIONS['x_max'])
+                    y_max = find_coordinate(row, COORD_VARIATIONS['y_max'])
                 except KeyError:
-                    width = find_coordinate(row, coord_variations['width'])
-                    height = find_coordinate(row, coord_variations['height'])
+                    width = find_coordinate(row, COORD_VARIATIONS['width'])
+                    height = find_coordinate(row, COORD_VARIATIONS['height'])
                     x_max = x_min + width
                     y_max = y_min + height
 
