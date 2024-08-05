@@ -28,6 +28,7 @@ SCHEDULER_STEP_SIZE = int(os.getenv('SCHEDULER_STEP_SIZE'))
 SCHEDULER_GAMMA = float(os.getenv('SCHEDULER_GAMMA'))
 EARLY_STOPPING_PATIENCE = int(os.getenv('EARLY_STOPPING_PATIENCE'))
 EARLY_STOPPING_MIN_DELTA = float(os.getenv('EARLY_STOPPING_MIN_DELTA'))
+IOU_THRESHOLD = float(os.getenv('IOU_THRESHOLD'))
 
 AVAILABLE_MODELS = {
     'fasterrcnn_resnet50_fpn': torchvision.models.detection.fasterrcnn_resnet50_fpn,
@@ -174,7 +175,7 @@ def calculate_average_precision(scores, correct):
     return average_precision.item()
 
 
-def calculate_mAP(all_predictions, all_targets, iou_threshold):
+def calculate_mAP(all_predictions, all_targets):
     ap_per_class = defaultdict(list)
 
     for (pred_boxes, pred_scores, pred_labels), (target_boxes, target_labels) in zip(all_predictions, all_targets):
@@ -194,7 +195,7 @@ def calculate_mAP(all_predictions, all_targets, iou_threshold):
             class_ious = ious[class_pred_indices][:, class_target_indices]
 
             max_ious, max_indices = class_ious.max(dim=1)
-            correct = max_ious > iou_threshold
+            correct = max_ious > IOU_THRESHOLD
 
             ap = calculate_average_precision(class_pred_scores, correct)
             ap_per_class[class_id.item()].append(ap)
@@ -208,7 +209,7 @@ def calculate_mAP(all_predictions, all_targets, iou_threshold):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, iou_threshold=0.5):
+def evaluate(model, data_loader, device):
     model.eval()
     all_predictions = []
     all_targets = []
@@ -228,7 +229,7 @@ def evaluate(model, data_loader, device, iou_threshold=0.5):
             all_predictions.append((pred_boxes, pred_scores, pred_labels))
             all_targets.append((target_boxes, target_labels))
 
-    return calculate_mAP(all_predictions, all_targets, iou_threshold)
+    return calculate_mAP(all_predictions, all_targets)
 
 
 def collate_fn(batch):

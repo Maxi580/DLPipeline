@@ -22,6 +22,7 @@ def config_page():
             'FRCNN_EPOCHS': request.form['FRCNN_EPOCHS'],
             'YOLO_BATCH_SIZE': request.form['YOLO_BATCH_SIZE'],
             'FRCNN_BATCH_SIZE': request.form['FRCNN_BATCH_SIZE'],
+            'IOU_THRESHOLD': request.form['IOU_THRESHOLD'],
             'AUGMENTATION_PROBABILITY': request.form['AUGMENTATION_PROBABILITY'],
             'MIXING_PROBABILITY': request.form['MIXING_PROBABILITY'],
             'MIXING_FACTOR_LOWER_RANGE': request.form['MIXING_FACTOR_LOWER_RANGE'],
