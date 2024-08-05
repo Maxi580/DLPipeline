@@ -299,7 +299,7 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
                 mAP = evaluate(model, val_loader, device)
                 scheduler.step()
 
-                save_model(model, epoch, optimizer, loss, f"{name}_{model}")
+                save_model(model, epoch, optimizer, loss, f"{name}_{rcnn_model}")
                 print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
                 early_stopping(mAP)
