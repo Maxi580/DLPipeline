@@ -1,13 +1,11 @@
-import os
-import json
 from utils import *
 from yolo import *
 from faster_r_cnn import *
 
-YOLO_WITH_AUGMENTATION = bool(os.getenv('YOLO_WITH_AUGMENTATION'))
-YOLO_WITHOUT_AUGMENTATION = bool(os.getenv('YOLO_WITHOUT_AUGMENTATION'))
-FASTER_RCNN_WITH_AUGMENTATION = bool(os.getenv('FASTER_RCNN_WITH_AUGMENTATION'))
-FASTER_RCNN_WITHOUT_AUGMENTATION = bool(os.getenv('FASTER_RCNN_WITHOUT_AUGMENTATION'))
+YOLO_WITH_AUGMENTATION = os.getenv('YOLO_WITH_AUGMENTATION')
+YOLO_WITHOUT_AUGMENTATION = os.getenv('YOLO_WITHOUT_AUGMENTATION')
+FASTER_RCNN_WITH_AUGMENTATION = os.getenv('FASTER_RCNN_WITH_AUGMENTATION')
+FASTER_RCNN_WITHOUT_AUGMENTATION = os.getenv('FASTER_RCNN_WITHOUT_AUGMENTATION')
 
 PREPROCESSING_OUTPUT_DIR = os.getenv('PREPROCESSING_OUTPUT_DIR')
 MODEL_WITH_PIXMIX_AUGMENTATION = os.getenv('MODEL_WITH_PIXMIX_AUGMENTATION')
@@ -31,12 +29,12 @@ def main():
 
     print(preprocessing_does_exist)
     if preprocessing_does_exist:
-        if YOLO_WITHOUT_AUGMENTATION:
+        if YOLO_WITHOUT_AUGMENTATION == 'TRUE':
             name = 'yolo_without_augmentation'
             print(f"Starting with: {name}")
             data_yaml_path = os.path.join(MODEL_OUTPUT_DIR, f"{name}.yaml")
             create_yolo_model(PREPROCESSING_OUTPUT_DIR, data_yaml_path, name)
-        if FASTER_RCNN_WITHOUT_AUGMENTATION:
+        if FASTER_RCNN_WITHOUT_AUGMENTATION == 'TRUE':
             name = 'faster_rcnn_with_augmentation'
             print(f"Starting with: {name}")
             train_image_dir = os.path.join(PREPROCESSING_OUTPUT_DIR, IMAGES_PATH, TRAIN_PATH)
@@ -50,12 +48,12 @@ def main():
     input_annotations_directories = input_subdirectories[1]
     augmentation_does_exist = check_directory_content(input_image_directories + input_annotations_directories)
     if augmentation_does_exist:
-        if YOLO_WITH_AUGMENTATION:
+        if YOLO_WITH_AUGMENTATION == 'TRUE':
             name = 'yolo_pixmix'
             print(f"Starting with: {name}")
             data_yaml_path = os.path.join(MODEL_OUTPUT_DIR, f"{name}.yaml")
             create_yolo_model(PIXMIX_OUTPUT_DIR, data_yaml_path, name)
-        if FASTER_RCNN_WITH_AUGMENTATION:
+        if FASTER_RCNN_WITH_AUGMENTATION == 'TRUE':
             name = 'faster_rcnn_with_augmentation'
             print(f"Starting with: {name}")
             train_image_dir = os.path.join(PIXMIX_OUTPUT_DIR, IMAGES_PATH, TRAIN_PATH)

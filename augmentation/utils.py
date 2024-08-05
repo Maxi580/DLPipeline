@@ -75,7 +75,8 @@ def read_yolo_file(file_path):
 def read_yolo_annotation(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
-    annotations = [list(map(float, line.strip().split())) for line in lines]
+    annotations = [[int(float(values[0]))] + list(map(float, values[1:])) for line in lines for values in
+                   [line.strip().split()]]
     return annotations
 
 

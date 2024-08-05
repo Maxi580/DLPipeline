@@ -63,7 +63,6 @@ def detect_annotation_format(input_directory, file):
         except json.JSONDecodeError:
             pass
 
-
     elif file_extension == '.csv':
         try:
             with open(file_path, 'r') as f:
@@ -140,7 +139,7 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
 
             if class_name not in class_mapping:
                 class_mapping[class_name] = len(class_mapping)
-            class_id = class_mapping[class_name]
+            class_id = int(class_mapping[class_name])
 
             bbox = obj.find('bndbox')
             x_min = int(bbox.find('xmin').text)

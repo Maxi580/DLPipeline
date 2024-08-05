@@ -91,8 +91,6 @@ def update_augmentations(augmentations):
         augmentations.append(A.RandomSunFlare(p=1.0))
 
 
-
-
 def mix_images(image, fractal, alpha=0.5):
     # Ensure both images have the same size and mode
     if image.size != fractal.size:
@@ -107,7 +105,7 @@ def random_augmentation(image, annotations):
     image_np = np.array(image)
 
     bboxes = [[ann[1], ann[2], ann[3], ann[4]] for ann in annotations]
-    class_labels = [ann[0] for ann in annotations]
+    class_labels = [int(ann[0]) for ann in annotations]
 
     aug = random.choice(get_augmentations())
     aug_with_bbox = A.Compose([aug], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
@@ -117,7 +115,8 @@ def random_augmentation(image, annotations):
     bboxes_aug = augmented['bboxes']
     labels_aug = augmented['class_labels']
 
-    aug_annotations = [[label] + list(bbox) for label, bbox in zip(labels_aug, bboxes_aug)]
+    aug_annotations = [[int(label)] + list(bbox) for label, bbox in zip(labels_aug, bboxes_aug)]
+    print(aug_annotations)
 
     return Image.fromarray(image_aug), aug_annotations
 
