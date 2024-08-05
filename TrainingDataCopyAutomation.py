@@ -24,7 +24,7 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "1a3003485e36e0486068ea56c0ad0612d2d73b1d172fcca20ba59a60a82635c8"  # Id of data_volume Container
+container_id = "355a6c05b7e3153c53489fe3bc5d98ff547b94749553d68873922fa7bcb91514"  # Id of data_volume Container
 local_path = r"C:\Users\maxie\Desktop\ShipDetection"  # Path to local images for training, need to be in correct directories (see above)
 container_path = "/data"
 

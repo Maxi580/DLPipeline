@@ -7,8 +7,10 @@ WIDTH = int(os.getenv('IMAGE_WIDTH'))
 HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
 NUMBER_OF_AUGMENTED_IMAGES = int(os.getenv('NUMBER_OF_AUGMENTED_IMAGES'))
 AUGMENTATIONS = os.getenv('AUGMENTATIONS')
-PIXMIX_AUGMENTATION_PROBABILITY = float(os.getenv('PIXMIX_AUGMENTATION_PROBABILITY'))
-PIXMIX_MIXING_PROBABILITY = float(os.getenv('PIXMIX_MIXING_PROBABILITY'))
+PIXMIX_AUGMENTATION_PROBABILITY = float(os.getenv('AUGMENTATION_PROBABILITY'))
+PIXMIX_MIXING_PROBABILITY = float(os.getenv('MIXING_PROBABILITY'))
+PIXMIX_MIXING_FACTOR_LOWER_RANGE = float(os.getenv('MIXING_FACTOR_LOWER_RANGE'))
+PIXMIX_MIXING_FACTOR_UPPER_RANGE = float(os.getenv('MIXING_FACTOR_UPPER_RANGE'))
 
 
 def get_env_bool(name, default=False):
@@ -89,6 +91,8 @@ def update_augmentations(augmentations):
         augmentations.append(A.RandomSunFlare(p=1.0))
 
 
+
+
 def mix_images(image, fractal, alpha=0.5):
     # Ensure both images have the same size and mode
     if image.size != fractal.size:
@@ -127,7 +131,7 @@ def apply_pixmix(image, annotation, mixing_set):
     if random.random() < PIXMIX_MIXING_PROBABILITY:
         mixing_pic_path = random.choice(mixing_set)
         mixing_pic = Image.open(mixing_pic_path)
-        alpha = random.uniform(MIXING_FACTOR_LOWER_RANGE, MIXING_FACTOR_UPPER_RANGE)
+        alpha = random.uniform(PIXMIX_MIXING_FACTOR_LOWER_RANGE, PIXMIX_MIXING_FACTOR_UPPER_RANGE)
         image = mix_images(image, mixing_pic, alpha)
 
     return image, annotation
@@ -139,7 +143,7 @@ def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_o
     os.makedirs(annotation_output_dir, exist_ok=True)
 
     mixing_set = load_image_set(FRACTAL_PATH)
-    update_augmentations(get_augmentations())
+    update_augmentations(augmentations)
 
     cntr = 0
     # Process each image in the input directory + the corresponding annotation

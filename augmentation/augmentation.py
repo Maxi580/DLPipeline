@@ -2,7 +2,8 @@ from pixmix import *
 
 PREPROCESSING_OUTPUT_DIR = os.getenv('PREPROCESSING_OUTPUT_DIR')
 PIXMIX_OUTPUT_DIR = os.getenv('PIXMIX_OUTPUT_DIR')
-PIXMIX_AUGMENTATION = bool(os.getenv('PIXMIX_AUGMENTATION'))
+YOLO_WITH_AUGMENTATION = bool(os.getenv('YOLO_WITH_AUGMENTATION'))
+FASTER_RCNN_WITH_AUGMENTATION = bool(os.getenv('YOLO_WITH_AUGMENTATION'))
 
 
 def main():
@@ -20,7 +21,7 @@ def main():
                 annotation_input_dir = input_annotation_paths[idx]
                 annotation_output_dir = output_annotation_paths[idx]
 
-                if PIXMIX_AUGMENTATION:
+                if YOLO_WITH_AUGMENTATION or FASTER_RCNN_WITH_AUGMENTATION:
                     pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_output_dir)
 
     except ValueError as e:

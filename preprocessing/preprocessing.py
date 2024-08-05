@@ -4,6 +4,8 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 from utils import *
 from collections import defaultdict
+import csv
+from typing import Dict, List
 
 INPUT_DATA_DIR = os.getenv('INPUT_DATA_DIR')
 PREPROCESSING_OUTPUT_DIR = os.getenv('PREPROCESSING_OUTPUT_DIR')
@@ -16,6 +18,7 @@ CLASSES = os.getenv('CLASSES')
 TXT_YOLO = 'txt-yolo'
 XML_PASCALVOC = 'xml-pascalvoc'
 JSON_COCO = 'json-coco'
+CSV = 'csv'
 
 
 def detect_annotation_format(input_directory, file):
@@ -52,10 +55,12 @@ def detect_annotation_format(input_directory, file):
         except json.JSONDecodeError:
             pass
 
+    elif file_extension == '.csv':
+        return CSV
+
 
 def preprocess_txt_yolo_annotation(input_file, output_file):
     try:
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             for line in infile:
                 outfile.write(line)
@@ -69,9 +74,6 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
     tree = ET.parse(os.path.join(xml_folder, xml_file))
     root = tree.getroot()
 
-    name = os.path.splitext(os.path.basename(xml_file))[0]
-    output_file = os.path.join(output_file, name + '.txt')
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, 'w') as yolo_file:
         for obj in root.findall('object'):
             class_name = obj.find('name').text
@@ -96,7 +98,7 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
     return class_mapping
 
 
-def preprocess_json_coco_annotation(coco_file, output_folder):
+def preprocess_json_coco_annotation(coco_file, output_file):
     with open(coco_file, 'r') as f:
         coco_data = json.load(f)
 
@@ -115,16 +117,96 @@ def preprocess_json_coco_annotation(coco_file, output_folder):
 
         class_id = ann['category_id'] - 1
 
-        output_file = os.path.join(output_folder, f"{image['file_name'].split('.')[0]}.txt")
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-
         with open(output_file, 'a') as yolo_file:
             yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
 
 
+def find_coordinate(row, coord_names):
+    for name in coord_names:
+        if name in row:
+            return float(row[name])
+    raise KeyError(f"Could not find any of {coord_names} in the CSV row")
+
+
+def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
+    if class_mapping is None:
+        class_mapping = {}
+
+    with open(csv_file, 'r') as f:
+        csv_reader = csv.DictReader(f)
+        current_image = None
+        yolo_file = None
+
+        for row in csv_reader:
+            image_name = row['filename']
+
+            # If we've moved to a new image, close the previous file and open a new one
+            if image_name != current_image:
+                if yolo_file:
+                    yolo_file.close()
+                current_image = image_name
+                yolo_file = open(output_file, 'w')
+
+            # Get class id
+            class_name = row['class_name']
+            if class_name not in class_mapping:
+                class_mapping[class_name] = len(class_mapping)
+            class_id = class_mapping[class_name]
+
+            # Parse bounding box coordinates
+            coord_variations = {
+                'x_min': ['x_min', 'xmin', 'x1', 'left', 'XMIN', 'Xmin'],
+                'y_min': ['y_min', 'ymin', 'y1', 'top', 'YMIN', 'Ymin'],
+                'x_max': ['x_max', 'xmax', 'x2', 'right', 'YMIN', 'Ymin'],
+                'y_max': ['y_max', 'ymax', 'y2', 'bottom', 'YMAX', 'Ymax'],
+                'width': ['width', 'w'],
+                'height': ['height', 'h']
+            }
+
+            try:
+                x_min = find_coordinate(row, coord_variations['x_min'])
+                y_min = find_coordinate(row, coord_variations['y_min'])
+
+                # Check if we have explicit x_max and y_max, otherwise calculate from width and height
+                try:
+                    x_max = find_coordinate(row, coord_variations['x_max'])
+                    y_max = find_coordinate(row, coord_variations['y_max'])
+                except KeyError:
+                    width = find_coordinate(row, coord_variations['width'])
+                    height = find_coordinate(row, coord_variations['height'])
+                    x_max = x_min + width
+                    y_max = y_min + height
+
+            except KeyError as e:
+                print(f"Error: Missing coordinate in CSV for {image_name}: {e}")
+                continue
+
+            # Convert to YOLO format
+            x_center = (x_min + x_max) / (2 * IMAGE_WIDTH)
+            y_center = (y_min + y_max) / (2 * IMAGE_HEIGHT)
+            width = (x_max - x_min) / IMAGE_WIDTH
+            height = (y_max - y_min) / IMAGE_HEIGHT
+
+            # Ensure values are within [0, 1] range
+            x_center = max(0, min(1, int(x_center)))
+            y_center = max(0, min(1, int(y_center)))
+            width = max(0, min(1, int(width)))
+            height = max(0, min(1, int(height)))
+
+            # Write to YOLO file
+            yolo_file.write(f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}\n")
+
+        if yolo_file:
+            yolo_file.close()
+
+    return class_mapping
+
+
 def format_annotations(input_directory, output_directory):
     for annotation in os.listdir(input_directory):
-        output_file = os.path.join(output_directory)
+        name = os.path.splitext(os.path.basename(annotation))[0]
+        output_file = os.path.join(output_directory, f"{name}.txt")
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
         annotation_format = detect_annotation_format(input_directory, annotation)
         class_mapping = create_or_load_class_mapping(MAPPING_FILE)
@@ -134,7 +216,10 @@ def format_annotations(input_directory, output_directory):
             class_mapping = preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
         elif annotation_format == JSON_COCO:
-            preprocess_json_coco_annotation(annotation, output_directory)
+            preprocess_json_coco_annotation(annotation, output_file)
+        elif annotation_format == CSV:
+            class_mapping = preprocess_csv_to_yolo(annotation, output_file, class_mapping)
+            save_class_mapping(MAPPING_FILE, class_mapping)
         else:
             raise ValueError(f"Unexpected annotation format: {annotation}")
 
