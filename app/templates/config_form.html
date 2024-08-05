@@ -462,8 +462,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="BATCH_SIZE">Batch Size:</label>
-                    <input type="number" id="BATCH_SIZE" name="BATCH_SIZE"
+                    <label for="YOLO_BATCH_SIZE">YOLO Batch Size:</label>
+                    <input type="number" id="YOLO_BATCH_SIZE" name="YOLO_BATCH_SIZE"
+                           min="0" max="1000" step="1" value="16">
+                </div>
+
+                <div class="form-group">
+                    <label for="FRCNN_BATCH_SIZE">FRCNN Batch Size:</label>
+                    <input type="number" id="FRCNN_BATCH_SIZE" name="FRCNN_BATCH_SIZE"
                            min="0" max="1000" step="1" value="16">
                 </div>
 

@@ -19,6 +19,7 @@ FRCNN_MODELS = os.getenv('FRCNN_MODELS').split(',')
 PRETRAINED = bool(os.getenv('PRETRAINED'))
 FRCNN_EPOCHS = int(os.getenv('FRCNN_EPOCHS'))
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
+FRCNN_BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 
 OPTIMIZER_LEARNING_RATE = float(os.getenv('OPTIMIZER_LEARNING_RATE'))
 OPTIMIZER_MOMENTUM = float(os.getenv('OPTIMIZER_MOMENTUM'))
@@ -90,7 +91,7 @@ class CustomDataset(Dataset):
 
 
 class EarlyStopping:
-    def __init__(self, patience=7, min_delta=0.0):
+    def __init__(self, patience, min_delta):
         self.patience = patience
         self.min_delta = min_delta
         self.counter = 0
@@ -241,8 +242,8 @@ def load_dataset(train_image_dir, train_label_dir, val_image_dir, val_label_dir)
                                 label_dir=val_label_dir,
                                 transform=transform)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=2, shuffle=True, collate_fn=collate_fn)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=FRCNN_BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=FRCNN_BATCH_SIZE, shuffle=False, collate_fn=collate_fn)
 
     return train_loader, val_loader
 

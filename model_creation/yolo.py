@@ -6,7 +6,7 @@ IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
 IMAGE_HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
 YOLO_MODELS = os.getenv('YOLO_MODELS').split(',')
 YOLO_EPOCHS = int(os.getenv('YOLO_EPOCHS'))
-BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
+YOLO_BATCH_SIZE = int(os.getenv('YOLO_BATCH_SIZE'))
 
 TRAIN_PATH = os.getenv('TRAIN_PATH')
 VAL_PATH = os.getenv('VAL_PATH')
@@ -70,7 +70,7 @@ def create_yolo_model(input_path, data_yaml_path, name):
                 data=data_yaml_path,
                 epochs=YOLO_EPOCHS,
                 imgsz=(IMAGE_WIDTH, IMAGE_HEIGHT),
-                batch=BATCH_SIZE,
+                batch=YOLO_BATCH_SIZE,
                 project=MODEL_OUTPUT_DIR,
                 name=f"{name}_{yolo_model}",
             )
