@@ -71,17 +71,22 @@ def get_model_architecture(architecture_name, num_classes=None):
 
 def load_pytorch_model(path):
     state_dict = torch.load(path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
-    if isinstance(state_dict, dict) and 'model' in state_dict:
-        architecture = state_dict.get('architecture', list(AVAILABLE_MODELS.keys())[0])
-        model = get_model_architecture(architecture, state_dict.get('num_classes', None))
-        model.load_state_dict(state_dict['model'])
-    elif isinstance(state_dict, dict) and 'state_dict' in state_dict:
-        architecture = state_dict.get('architecture', list(AVAILABLE_MODELS.keys())[0])
-        model = get_model_architecture(architecture, state_dict.get('num_classes', None))
-        model.load_state_dict(state_dict['state_dict'])
+
+    if isinstance(state_dict, dict):
+        if 'model' in state_dict:
+            return state_dict['model'].eval()
+
+        architecture = state_dict.get('architecture')
+        num_classes = state_dict.get('num_classes')
+
+        if not architecture:
+            raise ValueError("Architecture information not found in the saved model")
+
+        model = get_model_architecture(architecture, num_classes)
+        model.load_state_dict(state_dict['model_state_dict'])
+        return model.eval()
     else:
-        model = state_dict
-    return model.eval()
+        raise ValueError("Unexpected format of saved model")
 
 
 def run_inference(model, model_type, image):
@@ -157,6 +162,7 @@ def inference():
 
 
 if __name__ == '__main__':
-    does_exist = check_directory_content(MODEL_PATH + MODEL_INFERENCE_INPUT)
+    does_exist = check_directory_content([MODEL_PATH, MODEL_INFERENCE_INPUT])
+
     if does_exist:
         inference()

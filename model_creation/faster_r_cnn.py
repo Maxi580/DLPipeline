@@ -262,6 +262,7 @@ def save_model(model, epoch, optimizer, loss, name, architecture):
     output_path = os.path.join(output_dir, f"{name}.pth")
     torch.save({
         'epoch': epoch,
+        'model': model,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'architecture': architecture,
