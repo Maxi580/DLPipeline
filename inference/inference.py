@@ -54,7 +54,7 @@ def load_model(model_dir):
     raise ValueError(f"No supported model file found in {model_dir}")
 
 
-def get_model_architecture(architecture_name, num_classes=None):
+def get_pytorch_model_architecture(architecture_name, num_classes=None):
     if architecture_name not in AVAILABLE_MODELS:
         raise ValueError(f"Unsupported model architecture: {architecture_name}")
 
@@ -82,7 +82,7 @@ def load_pytorch_model(path):
         if not architecture:
             raise ValueError("Architecture information not found in the saved model")
 
-        model = get_model_architecture(architecture, num_classes)
+        model = get_pytorch_model_architecture(architecture, num_classes)
         model.load_state_dict(state_dict['model_state_dict'])
         return model.eval()
     else:
