@@ -233,6 +233,7 @@ def evaluate(model, data_loader, device):
 
 
 def collate_fn(batch):
+    """ensures that batches are structured in a way that's easy for your model to process"""
     return tuple(zip(*batch))
 
 
@@ -281,7 +282,6 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
     for rcnn_model in FRCNN_MODELS:
         if rcnn_model:
             model = load_model(rcnn_model, get_num_classes(train_label_dir), PRETRAINED)
-
 
             params = [p for p in model.parameters() if p.requires_grad]
             optimizer = optim.SGD(params, lr=OPTIMIZER_LEARNING_RATE, momentum=OPTIMIZER_MOMENTUM,

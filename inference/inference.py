@@ -136,6 +136,10 @@ def process_results(results, model_type, image):
 
 
 def inference():
+    """
+       You need to load every model differently depending on the model type, which is also true for using the model
+       In Essence this function uses the first model in /inference/model on every image in /inference/input_images
+    """
     try:
         model_type, model = load_model(MODEL_PATH)
     except Exception as e:

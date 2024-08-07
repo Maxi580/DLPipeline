@@ -17,6 +17,7 @@ MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
 
 
 def determine_number_of_classes(annotations_path):
+    """Returns how many classes there are, by going through every annotation file (in train_labels)"""
     class_ids = set()
     for root, _, files in os.walk(annotations_path):
         for file in files:
@@ -42,7 +43,7 @@ def create_dataset_yaml(dataset_path, output_path):
         'labels': val_labels,
     }
 
-    # Either you specify class names if file exists or just how many classes there are if not
+    # Either you specify class names if file (from preprocessing) exists or you check how many classes there are
     try:
         with open(MAPPING_FILE, 'r') as mapping_file:
             class_mapping = yaml.safe_load(mapping_file)
@@ -61,12 +62,16 @@ def create_dataset_yaml(dataset_path, output_path):
 
 
 def create_yolo_model(input_path, data_yaml_path, name):
+    """Yolo Model creation is very simple, the model type is included to ensure different naming for every model
+       The only thing you really have to do is to create a data_yaml that specifies where the data is stored and which
+       classes there are"""
     for yolo_model in YOLO_MODELS:
         if yolo_model:
             model = YOLO(yolo_model)
             create_dataset_yaml(input_path, data_yaml_path)
 
-            output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
+            output_dir = os.path.join(MODEL_OUTPUT_DIR, name, yolo_model)
+            os.makedirs(output_dir, exist_ok=True)
             results = model.train(
                 data=data_yaml_path,
                 epochs=YOLO_EPOCHS,

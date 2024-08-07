@@ -14,7 +14,9 @@ MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
 
 
 def main():
-    """Checks if data is available, trains model, saves model and results"""
+    """Checks if data is available, trains selected model(s), saves model and results
+       I am well aware that == 'TRUE' is bad but bool(TRUE) == bool(FALSE) == TRUE (Workarounds dont improve QOC
+       from my point of view."""
     create_directory(MODEL_OUTPUT_DIR)
 
     print(f"YOLO_WITHOUT_AUGMENTATION = {YOLO_WITHOUT_AUGMENTATION}")
