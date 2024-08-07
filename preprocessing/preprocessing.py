@@ -1,11 +1,8 @@
 import json
-from pathlib import Path
 import xml.etree.ElementTree as ET
 from PIL import Image
 from utils import *
-from collections import defaultdict
 import csv
-from typing import Dict, List
 
 INPUT_DATA_DIR = os.getenv('INPUT_DATA_DIR')
 PREPROCESSING_OUTPUT_DIR = os.getenv('PREPROCESSING_OUTPUT_DIR')
@@ -30,6 +27,8 @@ COORD_VARIATIONS = {
 
 
 def detect_annotation_format(input_directory, file):
+    """Checks for File Type by Extension and filters for annotation format. Annotation Format may not be 100% be
+     accurate but is a good indication"""
     file_extension = os.path.splitext(file)[1].lower()
     file_path = os.path.join(input_directory, file)
 
@@ -180,6 +179,7 @@ def preprocess_json_coco_annotation(coco_file, output_file):
 
 
 def find_coordinate(row, coord_names):
+    """Helper Function for csv parsing, to ensure every name in COORD_VARIATIONS is checked"""
     for name in coord_names:
         if name in row:
             return float(row[name])
@@ -249,7 +249,12 @@ def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
 
 
 def format_annotations(input_directory, output_directory):
-    """Detects annotation format and converts this format to standard yolo txt files"""
+    """Annotations have different Formats (YOLO/PASCALVOC/COCO) in different filetypes (xml,json,csv)
+       This Function attempts to parse it as good as possible and can not have a 100% success rate.
+       The core idea is to detect the correct annotation format/file and then parse it.
+       It is standard that Yolo is txt, pascalvoc is xml and coco is json, which is why this is checked. For CSV
+       its just a general check for the values specified in COORD_VARIATIONS at the top.
+       Class mapping is saved which is important for good inference afterwards."""
     for annotation in os.listdir(input_directory):
         name = os.path.splitext(os.path.basename(annotation))[0]
         output_file = os.path.join(output_directory, f"{name}.txt")
@@ -272,7 +277,10 @@ def format_annotations(input_directory, output_directory):
 
 
 def resize_annotation(base_name, original_width, original_height, output_dir):
-    """Adjust annotations to image resize"""
+    """Annotations are expected in YOLO txt Format and adjusted to resizing of the corresponding image
+       For that we find the correct annotation by assuming that it has the same name as the image
+       then we read the annotation (There can be more than just 1 bounding box per image) and adjust coordinates
+       The check that values have to be between 0 and 1 is because anything else is illegal in YOLO"""
     annotation_path = os.path.join(output_dir, f"{base_name}.txt")
 
     if not os.path.exists(annotation_path):
