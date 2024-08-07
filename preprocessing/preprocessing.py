@@ -305,17 +305,13 @@ def resize_annotation(base_name, original_width, original_height, output_dir):
 
 
 def resize_image(input_path, output_path):
-    """Converts every picture to RGB and then resizes it"""
+    """Resizes one image, also the images get formated to 3-Channel RGB for consistency. Augmentation will not
+       work unless images have 3 Channels. Function is Designed and should work
+       for Tiff/tif, jpg/jpeg and png format."""
     with Image.open(input_path) as img:
         original_width, original_height = img.size
 
-        if img.format == 'TIFF':
-            if img.mode == 'CMYK':
-                img = img.convert('RGB')
-            elif img.mode not in ['RGB', 'RGBA']:
-                img = img.convert('RGB')
-
-        elif img.mode == 'P' and 'transparency' in img.info:
+        if img.mode == 'P' and 'transparency' in img.info:
             img = img.convert('RGBA')
         img = img.convert('RGB')
 
@@ -323,7 +319,6 @@ def resize_image(input_path, output_path):
 
         output_format = os.path.splitext(output_path)[1].lower()
         if output_format in ['.jpg', '.jpeg']:
-            img_resized = img_resized.convert('RGB')
             img_resized.save(output_path, 'JPEG')
         elif output_format == '.tiff':
             img_resized.save(output_path, 'TIFF')
@@ -334,7 +329,9 @@ def resize_image(input_path, output_path):
 
 
 def preprocess():
-    """Resizes Images to 640/640 (defined in .env) and adjusts bounding boxes accordingly"""
+    """Create Output Directory, Go through every Annotation in Input Directory to change format
+        Go through every Picture in input Directory to change Size and find corresponding annotation to adjust it to
+        resize"""
     input_subdirectories = get_subdirectories(INPUT_DATA_DIR)
     input_image_directories = input_subdirectories[0]
     input_annotations_directories = input_subdirectories[1]
@@ -362,7 +359,9 @@ def preprocess():
 
 
 def main():
-    """Resize every Image and adjust Annotation"""
+    """Resizes every Image to the specified Width and Height
+       Annotations get transformed into standard yolo txt format for consistency
+       Annotations need to be adjusted on resizing"""
     try:
         # Check If Training Data is available
         input_image_paths, input_annotation_paths = get_subdirectories(INPUT_DATA_DIR)
