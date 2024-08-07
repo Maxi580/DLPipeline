@@ -33,6 +33,7 @@ def get_augmentations():
 
 
 def update_augmentations(augmentations):
+    """Read every Augmentation Configuration from .env and update it. The Result is a valid Albumentations list."""
     if get_env_bool('ENABLE_HORIZONTAL_FLIP'):
         augmentations.append(A.HorizontalFlip(p=1.0))
 
@@ -91,7 +92,7 @@ def update_augmentations(augmentations):
         augmentations.append(A.RandomSunFlare(p=1.0))
 
 
-def mix_images(image, fractal, alpha=0.5):
+def mix_images(image, fractal, alpha):
     # Ensure both images have the same size and mode
     if image.size != fractal.size:
         fractal = fractal.resize(image.size, Image.LANCZOS)  # Type: ignore
@@ -102,6 +103,7 @@ def mix_images(image, fractal, alpha=0.5):
 
 
 def random_augmentation(image, annotations):
+    """Using Albumentations for augmentation, annotations get adjusted automatically"""
     image_np = np.array(image)
 
     bboxes = [[ann[1], ann[2], ann[3], ann[4]] for ann in annotations]
@@ -116,12 +118,12 @@ def random_augmentation(image, annotations):
     labels_aug = augmented['class_labels']
 
     aug_annotations = [[int(label)] + list(bbox) for label, bbox in zip(labels_aug, bboxes_aug)]
-    print(aug_annotations)
 
     return Image.fromarray(image_aug), aug_annotations
 
 
 def apply_pixmix(image, annotation, mixing_set):
+    """Augmentation inspired by Dreamlike Pixmix Repo"""
     # Apply random augmentation
     if random.random() < PIXMIX_AUGMENTATION_PROBABILITY:
         image, annotation = random_augmentation(image, annotation)
@@ -137,6 +139,11 @@ def apply_pixmix(image, annotation, mixing_set):
 
 
 def pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_output_dir):
+    """Main Function that gets called in augmentation
+       augments exactly cntr number of images, it is still very important that annotations and images have same
+       filename
+       Basically goes through images, finds annotations, augments them and then saves it into the new folder"""
+
     # Create the output directories if it doesn't exist
     os.makedirs(image_output_dir, exist_ok=True)
     os.makedirs(annotation_output_dir, exist_ok=True)

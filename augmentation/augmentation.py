@@ -12,14 +12,13 @@ LABEL_PATH = os.getenv('LABEL_PATH')
 
 
 def main():
+    """Essentially checks if preprocessed input data is available and creates output directories
+       Then if the user wants to train Models with augmentation, the augmentation proceeds.
+       It is to note that training data gets augmented but val data not. (Easily changeable if needed)"""
     try:
         # Check If Training Data is available
         input_image_paths, input_annotation_paths = get_subdirectories(PREPROCESSING_OUTPUT_DIR)
         does_exist = check_directory_content(input_image_paths + input_annotation_paths)
-
-        # Create Output Directories
-        output_image_paths, output_annotation_paths = get_subdirectories(PIXMIX_OUTPUT_DIR)
-        create_directories(output_image_paths + output_annotation_paths)
 
         if does_exist:
             input_image_dir_train = os.path.join(PREPROCESSING_OUTPUT_DIR, IMAGES_PATH, TRAIN_PATH)
@@ -33,9 +32,15 @@ def main():
             output_annotation_dir_val = os.path.join(PIXMIX_OUTPUT_DIR, LABEL_PATH, VAL_PATH)
 
             if YOLO_WITH_AUGMENTATION or FASTER_RCNN_WITH_AUGMENTATION:
-                # Handle Training Data
-                pixmix(input_image_dir_train, output_image_dir_train, input_annotation_dir_train, output_annotation_dir_train)
+                # Create Output Directories
+                output_image_paths, output_annotation_paths = get_subdirectories(PIXMIX_OUTPUT_DIR)
+                create_directories(output_image_paths + output_annotation_paths)
 
+                # Augment Training Data
+                pixmix(input_image_dir_train, output_image_dir_train, input_annotation_dir_train,
+                       output_annotation_dir_train)
+
+                # Copy Val Data
                 for img in os.listdir(input_image_dir_val):
                     shutil.copy2(os.path.join(input_image_dir_val, img), os.path.join(output_image_dir_val, img))
 
