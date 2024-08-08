@@ -25,7 +25,8 @@ COORD_VARIATIONS = {
     'width': ['width', 'w'],
     'height': ['height', 'h']
 }
-CLASS_NAME_VARIATIONS =['class', 'class_name', 'category', 'label']
+CLASS_NAME_VARIATIONS = ['class', 'class_name', 'category', 'label', 'name']
+
 
 def detect_annotation_format(input_directory, file):
     """Checks for File Type by Extension and filters for annotation format. Annotation Format may not be 100% be
@@ -157,12 +158,28 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
     return class_mapping
 
 
-def preprocess_json_coco_annotation(input_directory, coco_file, output_path):
+def get_json_category_name(category):
+    for name_key in CLASS_NAME_VARIATIONS:
+        if name_key in category:
+            return category[name_key]
+    # If no matching key is found, use the first available key or return None
+    return next(iter(category.values())) if category else None
+
+
+def preprocess_json_coco_annotation(input_directory, coco_file, output_path, class_mapping):
+    if class_mapping is None:
+        class_mapping = {}
+
     file_path = os.path.join(input_directory, coco_file)
     with open(file_path, 'r') as f:
         coco_data = json.load(f)
 
     images = {img['id']: img for img in coco_data['images']}
+
+    for category in coco_data['categories']:
+        category_name = category['name']
+        if category_name not in class_mapping:
+            class_mapping[category_name] = len(class_mapping)
 
     for ann in coco_data['annotations']:
         image = images[ann['image_id']]
@@ -179,6 +196,8 @@ def preprocess_json_coco_annotation(input_directory, coco_file, output_path):
 
         with open(output_path, 'a') as yolo_file:
             yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
+
+    return class_mapping
 
 
 def find_coordinate(row, coord_names):
@@ -286,11 +305,13 @@ def format_annotations(input_directory, output_directory):
         class_mapping = create_or_load_class_mapping(MAPPING_FILE)
         if annotation_format == TXT_YOLO:
             preprocess_txt_yolo_annotation(input_directory, annotation, output_file)
+            # Class Mapping makes no Sense for YOlo as it has only numbers
         elif annotation_format == XML_PASCALVOC:
             class_mapping = preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
         elif annotation_format == JSON_COCO:
-            preprocess_json_coco_annotation(input_directory, annotation, output_file)
+            class_mapping = preprocess_json_coco_annotation(input_directory, annotation, output_file, class_mapping)
+            save_class_mapping(MAPPING_FILE, class_mapping)
         elif annotation_format == CSV:
             class_mapping = preprocess_csv_to_yolo(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
