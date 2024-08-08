@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+   set -e
 
-source /env_data/.env
-exec "$@"
+   tr -d '\r' < /env_data/.env > /env_data/.env.unix
+   source /env_data/.env.unix
+   exec "$@"

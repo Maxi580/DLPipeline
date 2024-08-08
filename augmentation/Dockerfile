@@ -19,7 +19,7 @@ COPY augmentation/fractals /data/fractals
 
 ENV PYTHONUNBUFFERED=1
 
-COPY load_env.sh /script/load_env.sh
-RUN chmod +x /script/load_env.sh
-ENTRYPOINT ["/script/load_env.sh"]
+COPY load_env.sh /env_data/load_env.sh
+RUN chmod +x /env_data/load_env.sh
+ENTRYPOINT ["/env_data/load_env.sh"]
 CMD ["python", "augmentation.py"]

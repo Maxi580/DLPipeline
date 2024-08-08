@@ -19,17 +19,11 @@ def main():
        from my point of view."""
     create_directory(MODEL_OUTPUT_DIR)
 
-    print(f"YOLO_WITHOUT_AUGMENTATION = {YOLO_WITHOUT_AUGMENTATION}")
-    print(f"FASTER_RCNN_WITHOUT_AUGMENTATION = {FASTER_RCNN_WITHOUT_AUGMENTATION}")
-    print(f"YOLO_WITH_AUGMENTATION = {YOLO_WITH_AUGMENTATION}")
-    print(f"FASTER_RCNN_WITH_AUGMENTATION = {FASTER_RCNN_WITH_AUGMENTATION}")
-
     input_subdirectories = get_subdirectories(PREPROCESSING_OUTPUT_DIR)
     input_image_directories = input_subdirectories[0]
     input_annotations_directories = input_subdirectories[1]
     preprocessing_does_exist = check_directory_content(input_image_directories + input_annotations_directories)
 
-    print(preprocessing_does_exist)
     if preprocessing_does_exist:
         if YOLO_WITHOUT_AUGMENTATION == 'TRUE':
             name = 'yolo_without_augmentation'
