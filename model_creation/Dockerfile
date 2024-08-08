@@ -18,6 +18,6 @@ COPY model_creation .
 
 ENV PYTHONUNBUFFERED=1
 
-COPY model_creation/load_env.sh .
+COPY model_creation/load_env.sh /model_creation
 ENTRYPOINT ["./load_env.sh"]
 CMD ["python", "model_creation.py"]
