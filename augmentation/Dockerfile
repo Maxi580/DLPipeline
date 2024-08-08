@@ -17,6 +17,5 @@ COPY fractals /data/fractals
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN chmod +x load_env.sh
-ENTRYPOINT ["./load_env.sh"]
-CMD ["python", "augmentation.py"]
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["tr -d '\\r' < /env_data/.env > /env_data/.env.unix && source /env_data/.env.unix && python augmentation.py"]
