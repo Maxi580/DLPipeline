@@ -39,8 +39,8 @@ services:
 
   inference:
     build:
-      context: .
-      dockerfile: ./inference/Dockerfile
+      context: ./inference
+      dockerfile: Dockerfile
     volumes:
       - inference_volume:/inference
       - env_data:/env_data
@@ -51,8 +51,8 @@ services:
       - env_manager
   web:
     build:
-      context: .
-      dockerfile: ./app/Dockerfile
+      context: ./app
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
@@ -70,8 +70,8 @@ services:
 
   preprocessing:
     build:
-      context: .
-      dockerfile: ./preprocessing/Dockerfile
+      context: ./preprocessing
+      dockerfile: Dockerfile
     volumes:
       - env_data:/env_data
       - data_volume:/data
@@ -84,8 +84,8 @@ services:
 
   augmentation:
     build:
-      context: .
-      dockerfile: ./augmentation/Dockerfile
+      context: ./augmentation
+      dockerfile: Dockerfile
     volumes:
       - env_data:/env_data
       - data_volume:/data
@@ -98,8 +98,8 @@ services:
 
   model-creation:
     build:
-      context: .
-      dockerfile: ./model_creation/Dockerfile
+      context: ./model_creation
+      dockerfile: Dockerfile
     volumes:
       - env_data:/env_data
       - data_volume:/data

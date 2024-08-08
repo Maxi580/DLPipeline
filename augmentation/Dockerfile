@@ -1,6 +1,9 @@
 FROM python:3.12-slim
 
-# Installing Dependencies
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /augmentation
+
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
@@ -9,17 +12,11 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /augmentation
+COPY . .
+COPY fractals /data/fractals
 
-COPY augmentation/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY augmentation .
-COPY augmentation/fractals /data/fractals
-
-ENV PYTHONUNBUFFERED=1
-
-COPY augmentation/load_env.sh /augmentation
-RUN chmod +x ./load_env.sh
+RUN chmod +x load_env.sh
 ENTRYPOINT ["./load_env.sh"]
 CMD ["python", "augmentation.py"]
