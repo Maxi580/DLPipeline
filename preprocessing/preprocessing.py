@@ -1,4 +1,5 @@
 import json
+import os.path
 import xml.etree.ElementTree as ET
 from PIL import Image
 from utils import *
@@ -24,7 +25,7 @@ COORD_VARIATIONS = {
     'width': ['width', 'w'],
     'height': ['height', 'h']
 }
-
+CLASS_NAME_VARIATIONS =['class', 'class_name', 'category', 'label']
 
 def detect_annotation_format(input_directory, file):
     """Checks for File Type by Extension and filters for annotation format. Annotation Format may not be 100% be
@@ -55,7 +56,7 @@ def detect_annotation_format(input_directory, file):
     elif file_extension == '.json':
         # Check for Coco which is common for json files
         try:
-            with open(file, 'r') as f:
+            with open(file_path, 'r') as f:
                 data = json.load(f)
             if 'images' in data and 'annotations' in data and 'categories' in data:
                 return JSON_COCO
@@ -116,9 +117,10 @@ def detect_annotation_format(input_directory, file):
             pass
 
 
-def preprocess_txt_yolo_annotation(input_file, output_file):
+def preprocess_txt_yolo_annotation(input_directory, input_file, output_path):
     try:
-        with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+        file_path = os.path.join(input_directory, input_file)
+        with open(file_path, 'r') as infile, open(output_path, 'w') as outfile:
             for line in infile:
                 outfile.write(line)
     except Exception as e:
@@ -155,8 +157,9 @@ def preprocess_xml_pascalvoc_annotation(xml_folder, xml_file, output_file, class
     return class_mapping
 
 
-def preprocess_json_coco_annotation(coco_file, output_file):
-    with open(coco_file, 'r') as f:
+def preprocess_json_coco_annotation(input_directory, coco_file, output_path):
+    file_path = os.path.join(input_directory, coco_file)
+    with open(file_path, 'r') as f:
         coco_data = json.load(f)
 
     images = {img['id']: img for img in coco_data['images']}
@@ -174,7 +177,7 @@ def preprocess_json_coco_annotation(coco_file, output_file):
 
         class_id = ann['category_id'] - 1
 
-        with open(output_file, 'a') as yolo_file:
+        with open(output_path, 'a') as yolo_file:
             yolo_file.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
 
 
@@ -186,11 +189,29 @@ def find_coordinate(row, coord_names):
     raise KeyError(f"Could not find any of {coord_names} in the CSV row")
 
 
-def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
+def get_csv_class_id(row, fieldnames, class_mapping):
+    class_name = None
+    for class_column in CLASS_NAME_VARIATIONS:
+        if class_column in fieldnames:
+            class_name = row.get(class_column)
+            if class_name:
+                break
+
+    if class_name is None:
+        raise ValueError(f"No valid class column found. Available columns: {fieldnames}")
+
+    if class_name not in class_mapping:
+        class_mapping[class_name] = len(class_mapping)
+
+    return class_mapping[class_name], class_mapping
+
+
+def preprocess_csv_to_yolo(input_directory, csv_file, output_file, class_mapping):
     if class_mapping is None:
         class_mapping = {}
 
-    with open(csv_file, 'r') as f:
+    file_path = os.path.join(input_directory, csv_file)
+    with open(file_path, 'r') as f:
         csv_reader = csv.DictReader(f)
         current_image = None
         yolo_file = None
@@ -206,10 +227,11 @@ def preprocess_csv_to_yolo(csv_file, output_file, class_mapping):
                 yolo_file = open(output_file, 'w')
 
             # Get class id
-            class_name = row['class_name']
-            if class_name not in class_mapping:
-                class_mapping[class_name] = len(class_mapping)
-            class_id = class_mapping[class_name]
+            try:
+                class_id, class_mapping = get_csv_class_id(row, csv_reader.fieldnames, class_mapping)
+            except ValueError as e:
+                print(f"Error processing row {row}: {e}")
+                continue
 
             # Parse bounding box coordinates
             try:
@@ -263,14 +285,14 @@ def format_annotations(input_directory, output_directory):
         annotation_format = detect_annotation_format(input_directory, annotation)
         class_mapping = create_or_load_class_mapping(MAPPING_FILE)
         if annotation_format == TXT_YOLO:
-            preprocess_txt_yolo_annotation(annotation, output_file)
+            preprocess_txt_yolo_annotation(input_directory, annotation, output_file)
         elif annotation_format == XML_PASCALVOC:
             class_mapping = preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
         elif annotation_format == JSON_COCO:
-            preprocess_json_coco_annotation(annotation, output_file)
+            preprocess_json_coco_annotation(input_directory, annotation, output_file)
         elif annotation_format == CSV:
-            class_mapping = preprocess_csv_to_yolo(annotation, output_file, class_mapping)
+            class_mapping = preprocess_csv_to_yolo(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
         else:
             raise ValueError(f"Unexpected annotation format: {annotation}")
