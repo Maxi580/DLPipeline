@@ -80,6 +80,6 @@ def create_yolo_model(input_path, data_yaml_path, name):
                 project=output_dir,
                 name=f"{name}_{yolo_model}",
             )
-            print(f"Model {yolo_model} created: {model} {results}")
+            print(f"Model {yolo_model} created: {results}")
         else:
             print(f"Warning: Please Select a valid YOLO Model.")

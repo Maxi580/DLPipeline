@@ -84,10 +84,19 @@ class CustomDataset(Dataset):
             boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
             boxes[:, [0, 2]] *= w
             boxes[:, [1, 3]] *= h
+            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        else:
+            # If there are no boxes, create empty tensors
+            boxes = torch.zeros((0, 4), dtype=torch.float32)
+            labels = torch.zeros((0,), dtype=torch.int64)
+            area = torch.zeros((0,), dtype=torch.float32)
 
-        target = {"boxes": boxes, "labels": labels, "image_id": torch.tensor([idx]),
-                  "area": (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]),
-                  "iscrowd": torch.zeros((len(boxes),), dtype=torch.int64)}
+        target = {"boxes": boxes,
+                  "labels": labels,
+                  "image_id": torch.tensor([idx]),
+                  "area": area,
+                  "iscrowd": torch.zeros((len(boxes),), dtype=torch.int64)
+                  }
 
         return image, target
 
