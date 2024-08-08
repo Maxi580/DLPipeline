@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libgl1-mesa-glx \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /model_creation
 
@@ -18,7 +18,6 @@ COPY model_creation .
 
 ENV PYTHONUNBUFFERED=1
 
-COPY load_env.sh /env_data/load_env.sh
-RUN chmod +x /env_data/load_env.sh
-ENTRYPOINT ["/env_data/load_env.sh"]
+RUN chmod +x ./load_env.sh
+ENTRYPOINT ["./load_env.sh"]
 CMD ["python", "model_creation.py"]
