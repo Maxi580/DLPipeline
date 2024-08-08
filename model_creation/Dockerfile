@@ -18,6 +18,6 @@ COPY model_creation .
 
 ENV PYTHONUNBUFFERED=1
 
-RUN chmod +x ./load_env.sh
+COPY model_creation/load_env.sh .
 ENTRYPOINT ["./load_env.sh"]
 CMD ["python", "model_creation.py"]
