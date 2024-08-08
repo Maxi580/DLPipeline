@@ -5,16 +5,11 @@ services:
     image: busybox
     volumes:
       - ./.env:/tmp/.env
-      - ./load_env.sh:/tmp/load_env.sh
       - env_data:/env_data
     command: >
       sh -c "
             if [ ! -f /env_data/.env ]; then
               cp /tmp/.env /env_data/.env
-            fi
-            if [ ! -f /env_data/load_env.sh ]; then
-              cp /tmp/load_env.sh /env_data/load_env.sh
-              chmod +x /env_data/load_env.sh
             fi
             tail -f /dev/null
           "
