@@ -1,5 +1,6 @@
 import subprocess
 import os
+from pathlib import Path
 
 # Script to copy local images for training onto data_volume container
 
@@ -24,9 +25,12 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "13eb413224e0bf11468bb129ffbc78a487b3000752315a884ad9b5195edef793"  # Id of data_volume Container
-local_path = r"C:\Users\maxie\Desktop\ShipDetection"  # Path to local images for training, need to be in correct directories (see above)
+container_id = "6b2c2c321a81b5921a78c10aba0bc84f693a3db8ca61de8406e0bd978136ad28"  # Id of data_volume Container
+
+local_path = Path(__file__).parent / "training_data"  # Path to local images for training, need to be in correct directories (see above)
+
 container_path = "/data"
 
 if __name__ == '__main__':
+    print("Copying training data to container...")
     docker_cp_to_container(local_path, container_id, container_path)

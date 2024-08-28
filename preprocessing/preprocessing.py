@@ -413,16 +413,27 @@ def main():
     """Resizes every Image to the specified Width and Height
        Annotations get transformed into standard yolo txt format for consistency
        Annotations need to be adjusted on resizing"""
+    print("Starting Preprocessing...")
     try:
         # Check If Training Data is available
         input_image_paths, input_annotation_paths = get_subdirectories(INPUT_DATA_DIR)
         does_exist = check_directory_content(input_image_paths + input_annotation_paths)
 
         if does_exist:
+            print("Data exists. Starting Preprocessing...")
             preprocess()
+            return
+        print("Preprocessing could not be performed: Training Data not found")
     except ValueError as e:
         print(f"Directory Content Check could not be performed: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred during preprocessing: {e}")
 
 
 if __name__ == '__main__':
+    import time
     main()
+
+    while True:
+        print("Preprocessing finished. Sleeping...")
+        time.sleep(10)

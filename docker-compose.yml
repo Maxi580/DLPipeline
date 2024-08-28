@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   env_manager:
     image: busybox
@@ -25,6 +23,7 @@ services:
               mkdir -p /data/images/train
               mkdir -p /data/images/val
               mkdir -p /data/fractals
+              tail -f /dev/null
             "
   inference_volume:
     image: busybox

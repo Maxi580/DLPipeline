@@ -16,11 +16,13 @@ def main():
        Then if the user wants to train Models with augmentation, the augmentation proceeds.
        It is to note that training data gets augmented but val data not. (Easily changeable if needed)"""
     try:
+        print("Starting with PixMix Augmentation...")
         # Check If Training Data is available
         input_image_paths, input_annotation_paths = get_subdirectories(PREPROCESSING_OUTPUT_DIR)
         does_exist = check_directory_content(input_image_paths + input_annotation_paths)
 
         if does_exist:
+            print("Data available, configuring directories...")
             input_image_dir_train = os.path.join(PREPROCESSING_OUTPUT_DIR, IMAGES_PATH, TRAIN_PATH)
             input_annotation_dir_train = os.path.join(PREPROCESSING_OUTPUT_DIR, LABEL_PATH, TRAIN_PATH)
             output_image_dir_train = os.path.join(PIXMIX_OUTPUT_DIR, IMAGES_PATH, TRAIN_PATH)
@@ -32,6 +34,7 @@ def main():
             output_annotation_dir_val = os.path.join(PIXMIX_OUTPUT_DIR, LABEL_PATH, VAL_PATH)
 
             if YOLO_WITH_AUGMENTATION or FASTER_RCNN_WITH_AUGMENTATION:
+                print("Augmentation started...")
                 # Create Output Directories
                 output_image_paths, output_annotation_paths = get_subdirectories(PIXMIX_OUTPUT_DIR)
                 create_directories(output_image_paths + output_annotation_paths)
@@ -49,6 +52,8 @@ def main():
                                  os.path.join(output_annotation_dir_val, ann))
 
     except ValueError as e:
+        print(f"Error occurred during augmentation: {e}")
+    except Exception as e:
         print(f"Error occurred during augmentation: {e}")
 
 
