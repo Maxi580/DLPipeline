@@ -6,8 +6,8 @@ import os
 def docker_cp_to_container(local_path, container_id, container_path):
     local_path = os.path.normpath(local_path)
 
-    command_a_t = f'docker cp {local_path}/annotations/train {container_id}:{container_path}/labels'
-    command_a_v = f'docker cp {local_path}/annotations/val {container_id}:{container_path}/labels'
+    command_a_t = f'docker cp {local_path}/masks/train {container_id}:{container_path}/masks'
+    command_a_v = f'docker cp {local_path}/masks/val {container_id}:{container_path}/masks'
     command_i_t = f'docker cp {local_path}/images/train {container_id}:{container_path}/images'
     command_i_v = f'docker cp {local_path}/images/val {container_id}:{container_path}/images'
 
@@ -24,8 +24,8 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "13eb413224e0bf11468bb129ffbc78a487b3000752315a884ad9b5195edef793"  # Id of data_volume Container
-local_path = r"C:\Users\maxie\Desktop\ShipDetection"  # Path to local images for training, need to be in correct directories (see above)
+container_id = "6a755c9554ec59fc3876cd8e0ad2e30ef47a038ed26b3829f2ffbac480ece9fa"  # Id of data_volume Container
+local_path = r"C:\Users\maxie\Desktop\archive"  # Path to local images for training, need to be in correct directories (see above)
 container_path = "/data"
 
 if __name__ == '__main__':

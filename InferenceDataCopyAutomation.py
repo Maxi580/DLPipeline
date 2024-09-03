@@ -36,7 +36,7 @@ def docker_cp_images_to_container(local_path, container_id, container_path):
 
 container_id = "" #  id of your inference volume container
 local_path = r""  # Local Path to your images
-container_path = "/inference/input_images"  # Path where the images for inference are stored
+container_path = "inference/input_images"  # Path where the images for inference are stored
 
 if __name__ == '__main__':
     docker_cp_images_to_container(local_path, container_id, container_path)

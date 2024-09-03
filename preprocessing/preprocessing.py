@@ -6,12 +6,15 @@ from utils import *
 import csv
 
 INPUT_DATA_DIR = os.getenv('INPUT_DATA_DIR')
-PREPROCESSING_OUTPUT_DIR = os.getenv('PREPROCESSING_OUTPUT_DIR')
+DETECTION_PREPROCESSING_OUTPUT_DIR = os.getenv('DETECTION_PREPROCESSING_OUTPUT_DIR')
+SEGMENTATION_PREPROCESSING_OUTPUT_DIR = os.getenv('SEGMENTATION_PREPROCESSING_OUTPUT_DIR')
 MAPPING_FILE = os.getenv('MAPPING_FILE')
+
+MASK_PATH = os.getenv('MASK_PATH')
+LABEL_PATH = os.getenv('LABEL_PATH')
 
 IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
 IMAGE_HEIGHT = int(os.getenv('IMAGE_HEIGHT'))
-CLASSES = os.getenv('CLASSES')
 
 TXT_YOLO = 'txt-yolo'
 XML_PASCALVOC = 'xml-pascalvoc'
@@ -379,16 +382,12 @@ def resize_image(input_path, output_path):
     return original_width, original_height
 
 
-def preprocess():
+def detection_preprocess(input_image_directories, input_annotations_directories):
     """Create Output Directory, Go through every Annotation in Input Directory to change format
         Go through every Picture in input Directory to change Size and find corresponding annotation to adjust it to
         resize"""
-    input_subdirectories = get_subdirectories(INPUT_DATA_DIR)
-    input_image_directories = input_subdirectories[0]
-    input_annotations_directories = input_subdirectories[1]
-
     # Create necessary Directories to store Data
-    output_subdirectories = get_subdirectories(PREPROCESSING_OUTPUT_DIR)
+    output_subdirectories = get_subdirectories(DETECTION_PREPROCESSING_OUTPUT_DIR, LABEL_PATH)
     output_image_directories = output_subdirectories[0]
     output_annotations_directories = output_subdirectories[1]
     create_directories(output_image_directories + output_annotations_directories)
@@ -409,17 +408,62 @@ def preprocess():
             resize_annotation(base_name, original_width, original_height, output_annotations_directories[idx])
 
 
+def find_mask(basename, input_directory):
+    """Checks if a fitting png mask does exist and returns it"""
+    extensions = ['.png', '.jpg', '.jpeg', '.tiff']
+
+    for extension in extensions:
+        filepath = os.path.join(input_directory, basename + extension)
+        if os.path.isfile(filepath):
+            return filepath, extension
+
+    print(f"Warning: Mask for {basename} not found")
+
+
+
+def segmentation_preprocess(input_image_directories, input_mask_directories):
+    # Create Output Directories
+    output_image_directories, output_mask_directories = get_subdirectories(SEGMENTATION_PREPROCESSING_OUTPUT_DIR, MASK_PATH)
+    create_directories(output_image_directories + output_mask_directories)
+
+    # Go through every image and if corresponding mask is found, resize both
+    for idx, input_image_directory in enumerate(input_image_directories):
+        input_image_directory = input_image_directory
+        input_mask_directory = input_mask_directories[idx]
+
+        for image_name in os.listdir(input_image_directory):
+            base_name = os.path.splitext(os.path.basename(image_name))[0]
+            image_input_path = os.path.join(input_image_directories[idx], image_name)
+            mask_input_path, extension = find_mask(base_name, input_mask_directory)
+
+            if mask_input_path:
+                image_output_path = os.path.join(output_image_directories[idx], image_name)
+                mask_output_path = os.path.join(output_mask_directories[idx], base_name + extension)
+
+                resize_image(image_input_path, image_output_path)
+                resize_image(mask_input_path, mask_output_path)
+
+
 def main():
     """Resizes every Image to the specified Width and Height
        Annotations get transformed into standard yolo txt format for consistency
        Annotations need to be adjusted on resizing"""
     try:
-        # Check If Training Data is available
-        input_image_paths, input_annotation_paths = get_subdirectories(INPUT_DATA_DIR)
-        does_exist = check_directory_content(input_image_paths + input_annotation_paths)
+        # Check If Detection Training Data is available
+        input_image_directories, input_annotation_directories = get_subdirectories(INPUT_DATA_DIR, LABEL_PATH)
+        detection_does_exist = check_directory_content(input_image_directories + input_annotation_directories)
 
-        if does_exist:
-            preprocess()
+        # Check If Segmentation Training Data is available
+        input_image_directories, input_mask_directories = get_subdirectories(INPUT_DATA_DIR, MASK_PATH)
+        segmentation_does_exist = check_directory_content(input_image_directories + input_mask_directories)
+
+        if detection_does_exist:
+            print("Detection Data gets preprocessed")
+            detection_preprocess(input_image_directories, input_annotation_directories)
+        if segmentation_does_exist:
+            print("Segmentation Data gets preprocessed")
+            segmentation_preprocess(input_image_directories, input_mask_directories)
+
     except ValueError as e:
         print(f"Directory Content Check could not be performed: {e}")
 

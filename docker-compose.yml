@@ -24,6 +24,8 @@ services:
               mkdir -p /data/labels/val
               mkdir -p /data/images/train
               mkdir -p /data/images/val
+              mkdir -p /data/masks/val
+              mkdir -p /data/masks/train
               mkdir -p /data/fractals
             "
   inference_volume:
@@ -39,7 +41,7 @@ services:
 
   inference:
     build:
-      context: ./inference
+      context: inference
       dockerfile: Dockerfile
     volumes:
       - inference_volume:/inference
@@ -70,7 +72,7 @@ services:
 
   preprocessing:
     build:
-      context: ./preprocessing
+      context: preprocessing
       dockerfile: Dockerfile
     volumes:
       - env_data:/env_data
@@ -84,7 +86,7 @@ services:
 
   augmentation:
     build:
-      context: ./augmentation
+      context: augmentation
       dockerfile: Dockerfile
     volumes:
       - env_data:/env_data
@@ -98,7 +100,7 @@ services:
 
   model-creation:
     build:
-      context: ./model_creation
+      context: model_creation
       dockerfile: Dockerfile
     volumes:
       - env_data:/env_data

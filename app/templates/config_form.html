@@ -24,7 +24,7 @@
                         <input type="number" id="IMAGE_HEIGHT" name="IMAGE_HEIGHT"
                                min="0" max="10000" step="1" value="640">
                     </div>
-                <h3>Model Selection</h3>
+                <h3>Detection Model Selection</h3>
                 <div class="form-group">
                     <label for="YOLO_WITH_AUGMENTATION">Create YOLO Model(s) using Augmentation:</label>
                     <select id="YOLO_WITH_AUGMENTATION" name="YOLO_WITH_AUGMENTATION">
@@ -51,6 +51,21 @@
                     <select id="FASTER_RCNN_WITHOUT_AUGMENTATION" name="FASTER_RCNN_WITHOUT_AUGMENTATION">
                         <option value="TRUE">Yes</option>
                         <option value="FALSE">No</option>
+                    </select>
+                </div>
+                <h3>Segmentation Model Selection</h3>
+                <div class="form-group">
+                    <label for="UNET_WITH_AUGMENTATION">Create U-Net Model(s) With Augmentation:</label>
+                    <select id="UNET_WITH_AUGMENTATION" name="UNET_WITH_AUGMENTATION">
+                        <option value="FALSE">No</option>
+                        <option value="TRUE">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="UNET_WITHOUT_AUGMENTATION">Create U-Net Model(s) Without Augmentation:</label>
+                    <select id="UNET_WITHOUT_AUGMENTATION" name="UNET_WITHOUT_AUGMENTATION">
+                        <option value="FALSE">No</option>
+                        <option value="TRUE">Yes</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -394,11 +409,39 @@
             </div>
 
             <div class="pixmix-section">
+                <h3>Yolo Configuration</h3>
+                <div class="form-group">
+                    <label for="YOLO_EPOCHS">YOLO Epochs:</label>
+                    <input type="number" id="YOLO_EPOCHS" name="YOLO_EPOCHS"
+                           min="0" max="1000" step="1" value="20">
+                </div>
+
+                <div class="form-group">
+                    <label for="YOLO_BATCH_SIZE">YOLO Batch Size:</label>
+                    <input type="number" id="YOLO_BATCH_SIZE" name="YOLO_BATCH_SIZE"
+                           min="0" max="1000" step="1" value="16">
+                </div>
+
                 <h3>Faster RCNN Configuration</h3>
+                <div class="form-group">
+                    <label for="FRCNN_EPOCHS">Faster RCNN Epochs:</label>
+                    <input type="number" id="FRCNN_EPOCHS" name="FRCNN_EPOCHS"
+                           min="0" max="1000" step="1" value="20">
+                </div>
+                <div class="form-group">
+                    <label for="FRCNN_BATCH_SIZE">FRCNN Batch Size:</label>
+                    <input type="number" id="FRCNN_BATCH_SIZE" name="FRCNN_BATCH_SIZE"
+                           min="0" max="1000" step="1" value="16">
+                </div>
                 <div class="form-group">
                     <label for="OPTIMIZER_LEARNING_RATE">Learning Rate (Optimizer):</label>
                     <input type="number" id="OPTIMIZER_LEARNING_RATE" name="OPTIMIZER_LEARNING_RATE"
                            min="0" max="1" step="0.001" value="0.005">
+                </div>
+                <div class="form-group">
+                    <label for="IOU_THRESHOLD">FRCNN IOU_THRESHOLD:</label>
+                    <input type="number" id="IOU_THRESHOLD" name="IOU_THRESHOLD"
+                           min="0" max="1" step="0.01" value="0.5">
                 </div>
                 <div class="form-group">
                     <label for="OPTIMIZER_MOMENTUM">Momentum (Optimizer):</label>
@@ -430,45 +473,32 @@
                     <input type="number" id="EARLY_STOPPING_MIN_DELTA" name="EARLY_STOPPING_MIN_DELTA"
                            min="0" max="1" step="0.001" value="0.001">
                 </div>
-            </div>
-
-            <div class="pixmix-section">
+                 <h3>U-Net Configuration</h3>
+                   <label for="UNET_BATCH_SIZE">Batch Size:</label>
+                    <input type="number" id="UNET_BATCH_SIZE" name="UNET_BATCH_SIZE"
+                           min="0" max="1000" step="1" value="4">
+                </div>
+                <div class="form-group">
+                    <label for="UNET_NUM_CLASSES">Number of Classes:</label>
+                    <input type="number" id="UNET_NUM_CLASSES" name="UNET_NUM_CLASSES"
+                           min="0" max="100" step="1" value="2">
+                </div>
+                <div class="form-group">
+                    <label for="UNET_EPOCHS">Epochs:</label>
+                    <input type="number" id="UNET_EPOCHS" name="UNET_EPOCHS"
+                           min="0" max="100" step="1" value="10">
+                </div>
+                 <div class="form-group">
+                    <label for="UNET_LR">Learning Rate:</label>
+                    <input type="number" id="UNET_LR" name="UNET_LR"
+                           min="0" max="1" step="0.001" value="0.001">
+                </div>
                 <h3>Final Model Configuration</h3>
                 <div class="form-group">
                     <label for="NUMBER_OF_AUGMENTED_IMAGES">Number of Augmented Images:</label>
                     <input type="number" id="NUMBER_OF_AUGMENTED_IMAGES" name="NUMBER_OF_AUGMENTED_IMAGES"
                            min="0" max="10000" step="1" value="200">
                 </div>
-
-                <div class="form-group">
-                    <label for="YOLO_EPOCHS">YOLO Epochs:</label>
-                    <input type="number" id="YOLO_EPOCHS" name="YOLO_EPOCHS"
-                           min="0" max="1000" step="1" value="20">
-                </div>
-                <div class="form-group">
-                    <label for="FRCNN_EPOCHS">Faster RCNN Epochs:</label>
-                    <input type="number" id="FRCNN_EPOCHS" name="FRCNN_EPOCHS"
-                           min="0" max="1000" step="1" value="20">
-                </div>
-
-                <div class="form-group">
-                    <label for="YOLO_BATCH_SIZE">YOLO Batch Size:</label>
-                    <input type="number" id="YOLO_BATCH_SIZE" name="YOLO_BATCH_SIZE"
-                           min="0" max="1000" step="1" value="16">
-                </div>
-
-                <div class="form-group">
-                    <label for="FRCNN_BATCH_SIZE">FRCNN Batch Size:</label>
-                    <input type="number" id="FRCNN_BATCH_SIZE" name="FRCNN_BATCH_SIZE"
-                           min="0" max="1000" step="1" value="16">
-                </div>
-
-                <div class="form-group">
-                    <label for="IOU_THRESHOLD">FRCNN IOU_THRESHOLD:</label>
-                    <input type="number" id="IOU_THRESHOLD" name="IOU_THRESHOLD"
-                           min="0" max="1" step="0.01" value="0.5">
-                </div>
-
                 <button type="submit">Save Configuration!</button>
             </div>
         </form>

@@ -12,13 +12,13 @@ def create_directory(directory):
         os.makedirs(directory, exist_ok=True)
 
 
-def get_subdirectories(directory):
+def get_subdirectories(directory, second_subdirectory):
     """Appends val and train to and returns these paths"""
     image_subdirectories = []
     annotation_subdirectories = []
     for split_sub_directory in DATA_SPLIT_DIRECTORY:
-        image_subdirectories.append(os.path.join(directory, IMAGES_PATH, split_sub_directory))
-        annotation_subdirectories.append(os.path.join(directory, LABEL_PATH, split_sub_directory))
+        image_subdirectories.append(os.path.join(directory, second_subdirectory, split_sub_directory))
+        annotation_subdirectories.append(os.path.join(directory, second_subdirectory, split_sub_directory))
     return image_subdirectories, annotation_subdirectories
 
 
