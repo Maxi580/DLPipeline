@@ -23,8 +23,6 @@ AVAILABLE_MODELS = {
     'fasterrcnn_mobilenet_v3_large_fpn': torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn,
     'fasterrcnn_mobilenet_v3_large_320_fpn': torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn,
     'fasterrcnn_resnet50_fpn_v2': torchvision.models.detection.fasterrcnn_resnet50_fpn_v2,
-    'ssd300_vgg16': ssd300_vgg16,
-    'retinanet_resnet50_fpn_v2': retinanet_resnet50_fpn_v2,
 }
 
 
