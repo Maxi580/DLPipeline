@@ -86,7 +86,7 @@ def create_yolo_model(input_path, data_yaml_path, name):
             inference_output_dir = os.path.join(MODEL_INFERENCE_YOLO_OUTPUT_DIR)
             if not os.path.exists(inference_output_dir):
                 os.makedirs(inference_output_dir)
-            inference_output_path = os.path.join(inference_output_dir, f"{name}_{yolo_model}.pth")
+            inference_output_path = os.path.join(inference_output_dir, f"{name}_{yolo_model}")
             model.save(inference_output_path)
         else:
             print(f"Warning: Please Select a valid YOLO Model.")
