@@ -25,31 +25,13 @@ services:
               mkdir -p /data/masks/val
               mkdir -p /data/masks/train
               mkdir -p /data/fractals
+              mkdir -p /data/inference/models/yolo
+              mkdir -p /data/inference/models/fasterrcnn
+              mkdir -p /data/inference/models/u-net
+              mkdir -p /data/inference/input_images
+              mkdir -p /data/inference/output_images
               tail -f /dev/null
             "
-  inference_volume:
-    image: busybox
-    volumes:
-      - inference_volume:/inference
-    command: >
-      sh -c "
-              mkdir -p /inference/model
-              mkdir -p /inference/input_images
-              mkdir -p /inference/output_images
-            "
-
-  inference:
-    build:
-      context: inference
-      dockerfile: Dockerfile
-    volumes:
-      - inference_volume:/inference
-      - env_data:/env_data
-    env_file:
-      - ./.env
-    depends_on:
-      - inference_volume
-      - env_manager
   web:
     build:
       context: ./app

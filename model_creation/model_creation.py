@@ -1,7 +1,7 @@
 from utils import *
 from yolo import *
 from faster_r_cnn import *
-from u_net import create_u_net_model
+from unet import create_u_net_model
 
 LABEL_PATH = os.getenv('LABEL_PATH')
 MASK_PATH = os.getenv('MASK_PATH')
@@ -102,7 +102,6 @@ def main():
             val_image_dir = os.path.join(SEGMENTATION_PREPROCESSING_OUTPUT_DIR, IMAGES_PATH, VAL_PATH)
             val_label_dir = os.path.join(SEGMENTATION_PREPROCESSING_OUTPUT_DIR, MASK_PATH, VAL_PATH)
             create_u_net_model(train_image_dir, train_label_dir, val_image_dir, val_label_dir, name)
-
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ IMAGES_PATH = os.getenv('IMAGES_PATH')
 LABEL_PATH = os.getenv('LABEL_PATH')
 MAPPING_FILE = os.getenv('MAPPING_FILE')
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
-
+MODEL_INFERENCE_YOLO_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_YOLO_OUTPUT_DIR')
 
 def determine_number_of_classes(annotations_path):
     """Returns how many classes there are, by going through every annotation file (in train_labels)"""
@@ -81,5 +81,11 @@ def create_yolo_model(input_path, data_yaml_path, name):
                 name=f"{name}_{yolo_model}",
             )
             print(f"Model {yolo_model} created: {results}")
+
+            inference_output_dir = os.path.join(MODEL_INFERENCE_YOLO_OUTPUT_DIR)
+            if not os.path.exists(inference_output_dir):
+                os.makedirs(inference_output_dir)
+            inference_output_path = os.path.join(inference_output_dir, f"{name}_{yolo_model}.pth")
+            model.save(inference_output_path)
         else:
             print(f"Warning: Please Select a valid YOLO Model.")

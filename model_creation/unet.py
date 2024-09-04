@@ -14,6 +14,7 @@ UNET_EPOCHS = int(os.getenv('UNET_EPOCHS'))
 UNET_LR = float(os.getenv('UNET_LR'))
 
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
+MODEL_INFERENCE_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_OUTPUT_DIR')
 
 
 class DoubleConv(nn.Module):
@@ -110,8 +111,8 @@ class SegmentationDataset(Dataset):
         return image, mask
 
 
-def save_model(model, epoch, optimizer, val_loss, name):
-    output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
+def save_model(model, epoch, optimizer, val_loss, model_dir: str, name: str):
+    output_dir = os.path.join(model_dir, name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -137,6 +138,9 @@ def train_unet(model, train_loader, val_loader, name, num_epochs, learning_rate)
 
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
+    best_val_loss = float("inf")
+    best_model = None
+    best_epoch = 0
     for epoch in range(num_epochs):
         print(f"Starting with epoch: {epoch}")
         model.train()
@@ -169,11 +173,15 @@ def train_unet(model, train_loader, val_loader, name, num_epochs, learning_rate)
         scheduler.step(val_loss)
 
         print(f"Learning Rate: {scheduler.get_last_lr()}")
+        if val_loss < best_val_loss:
+            best_model = model
+            best_val_loss = val_loss
+            best_epoch = epoch
 
-        save_model(model, epoch, optimizer, val_loss, name)
+        save_model(model, epoch, optimizer, val_loss, MODEL_OUTPUT_DIR, name)
         print(f"Model {epoch} saved with validation loss: {val_loss:.4f} and training loss: {train_loss:.4f}")
 
-    return model
+    return best_model, optimizer, best_val_loss, best_epoch
 
 
 def create_u_net_model(train_image_dir, train_mask_dir, val_image_dir, val_mask_dir, name):
@@ -184,4 +192,8 @@ def create_u_net_model(train_image_dir, train_mask_dir, val_image_dir, val_mask_
     val_loader = DataLoader(val_dataset, batch_size=UNET_BATCH_SIZE, shuffle=False, num_workers=UNET_NUM_WORKERS)
 
     model = UNet(n_channels=3, n_classes=UNET_NUM_CLASSES)
-    train_unet(model, train_loader, val_loader, name, UNET_EPOCHS, UNET_LR)
+    final_model, optimizer, val_loss, best_epoch = train_unet(model, train_loader, val_loader, name, UNET_EPOCHS, UNET_LR)
+    inference_output_dir = os.path.join(MODEL_INFERENCE_OUTPUT_DIR, 'u-net')
+    if not os.path.exists(inference_output_dir):
+        os.makedirs(inference_output_dir)
+    save_model(final_model, best_epoch, optimizer, val_loss, inference_output_dir, name)

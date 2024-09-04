@@ -15,6 +15,8 @@ from torch.optim.lr_scheduler import StepLR
 import torchvision.transforms as T
 import torch.optim as optim
 
+MODEL_INFERENCE_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_OUTPUT_DIR')
+
 FRCNN_MODELS = os.getenv('FRCNN_MODELS').split(',')
 PRETRAINED = bool(os.getenv('PRETRAINED'))
 FRCNN_EPOCHS = int(os.getenv('FRCNN_EPOCHS'))
@@ -262,8 +264,8 @@ def load_dataset(train_image_dir, train_label_dir, val_image_dir, val_label_dir)
     return train_loader, val_loader
 
 
-def save_model(model, epoch, optimizer, loss, name, architecture):
-    output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
+def save_model(model, epoch, optimizer, mAP, name, architecture, model_dir: str):
+    output_dir = os.path.join(model_dir, name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -274,7 +276,7 @@ def save_model(model, epoch, optimizer, loss, name, architecture):
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'architecture': architecture,
-        'loss': loss,
+        'mAP': mAP,
     }, output_path)
     print(f"Model saved to {output_path}")
 
@@ -303,13 +305,22 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
             print(f"Train loader length: {len(train_loader)}")
             print(f"Val loader length: {len(val_loader)}")
             print(f"Device: {device}")
+
+            best_mAP= 0
+            best_model = None
+            best_model_epoch = 0
             for epoch in range(num_epochs):
                 loss = train_one_epoch(model, optimizer, train_loader, device)
 
                 mAP = evaluate(model, val_loader, device)
                 scheduler.step()
 
-                save_model(model, epoch, optimizer, loss, name, rcnn_model)
+                if mAP > best_mAP:
+                    best_mAP = mAP
+                    best_model = model
+                    best_model_epoch = epoch
+
+                save_model(model, epoch, optimizer, mAP, name, rcnn_model, MODEL_OUTPUT_DIR)
                 print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
                 early_stopping(mAP)
@@ -317,6 +328,10 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
                     print("Early stopping")
                     break
 
+            inference_output_dir = os.path.join(MODEL_INFERENCE_OUTPUT_DIR, 'u-net')
+            if not os.path.exists(inference_output_dir):
+                os.makedirs(inference_output_dir)
+            save_model(best_model, best_model_epoch, optimizer, best_mAP, name, rcnn_model, inference_output_dir)
             print(f"Faster RCNN {model} has finished")
         else:
             print(f"Warning: Please Select a valid Faster RCNN Model.")
