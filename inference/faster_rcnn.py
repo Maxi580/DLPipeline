@@ -98,16 +98,12 @@ def frcnn_inference():
                     model_output_dir = os.path.join(MODEL_INFERENCE_FRCNN_OUTPUT_DIR, os.path.splitext(model_name)[0])
                     os.makedirs(model_output_dir, exist_ok=True)
 
-                    output_filename = (f"{os.path.splitext(image_filename)[0]}_{model_name}"
-                                       f"{os.path.splitext(image_filename)[1]}")
-                    output_path = os.path.join(model_output_dir, output_filename)
+                    output_path = os.path.join(model_output_dir, image_filename)
 
                     cv2.imwrite(output_path, output_image)
                     print(f"Processed {image_filename} with {model_name}. Location: {output_path}")
                 except Exception as e:
                     print(f"Error processing {image_filename}: {str(e)}")
-
-    print("All images processed with all models!")
 
 
 def frcnn_main():

@@ -12,8 +12,11 @@ if __name__ == '__main__':
 
     if input_does_exist:
         yolo_main()
+        print("Yolo Done!")
         frcnn_main()
+        print("Frcnn Done!")
         unet_main()
+        print("Unet Done!")
     else:
         print("No Input Data has been found.")
 

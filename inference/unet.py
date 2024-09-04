@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision import transforms
 import numpy as np
 import cv2
@@ -80,6 +81,13 @@ class UNet(nn.Module):
         return logits
 
 
+def get_optimal_dimensions(width, height):
+    """Images need to be divisible by 2^n"""
+    new_width = ((width + 15) // 16) * 16
+    new_height = ((height + 15) // 16) * 16
+    return new_width, new_height
+
+
 def ensure_dir(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -105,9 +113,19 @@ def load_unet_model(model_path):
 def run_inference(model, image):
     model.eval()
     with torch.no_grad():
-        image_tensor = transforms.ToTensor()(image).unsqueeze(0).to(device)
+        original_height, original_width = image.shape[:2]
+
+        new_width, new_height = get_optimal_dimensions(original_width, original_height)
+
+        resized_image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+
+        image_tensor = transforms.ToTensor()(resized_image).unsqueeze(0).to(device)
         output = model(image_tensor)
-        return output.squeeze(0).cpu()
+
+        output_resized = F.interpolate(output, size=(original_height, original_width), mode='bilinear',
+                                       align_corners=False)
+
+        return output_resized.squeeze(0).cpu()
 
 
 def process_results(output, original_image, color_map):
@@ -122,11 +140,8 @@ def process_results(output, original_image, color_map):
 
 def unet_inference():
     models = []
-    print(f"Directory: {MODEL_INFERENCE_UNET_OUTPUT_DIR}")
-    print(f"List: {os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR)}")
     for filename in os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR):
         if filename.endswith('.pth'):
-            print("Unet Model Found!")
             model_path = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, filename)
             try:
                 model = load_unet_model(model_path)
@@ -150,11 +165,10 @@ def unet_inference():
                 output = run_inference(model, original_image)
                 segmentation_result = process_results(output, original_image, color_map)
 
-                base_name, ext = os.path.splitext(image_filename)
-                output_filename = f"{base_name}_{ext}"
-                output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, model_name)
-                ensure_dir(output_dir)
-                output_path = os.path.join(output_dir, output_filename)
+                model_output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, os.path.splitext(model_name)[0])
+                os.makedirs(model_output_dir, exist_ok=True)
+
+                output_path = os.path.join(model_output_dir, image_filename)
 
                 cv2.imwrite(output_path, cv2.cvtColor(segmentation_result, cv2.COLOR_RGB2BGR))
                 logger.info(f"Processed {image_filename} with {model_name}")
@@ -170,4 +184,3 @@ def unet_main():
         unet_inference()
     else:
         print("No U-Net models found in the specified directory.")
-
