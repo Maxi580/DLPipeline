@@ -27,68 +27,6 @@ PREDEFINED_COLOURS = [
 ]
 
 
-class DoubleConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(DoubleConv, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, 3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
-        )
-
-    def forward(self, x):
-        return self.conv(x)
-
-
-class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes):
-        super(UNet, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
-
-        self.inc = DoubleConv(n_channels, 64)
-        self.down1 = nn.Sequential(nn.MaxPool2d(2), DoubleConv(64, 128))
-        self.down2 = nn.Sequential(nn.MaxPool2d(2), DoubleConv(128, 256))
-        self.down3 = nn.Sequential(nn.MaxPool2d(2), DoubleConv(256, 512))
-        self.down4 = nn.Sequential(nn.MaxPool2d(2), DoubleConv(512, 1024))
-
-        self.up1 = nn.ConvTranspose2d(1024, 512, 2, stride=2)
-        self.up_conv1 = DoubleConv(1024, 512)
-        self.up2 = nn.ConvTranspose2d(512, 256, 2, stride=2)
-        self.up_conv2 = DoubleConv(512, 256)
-        self.up3 = nn.ConvTranspose2d(256, 128, 2, stride=2)
-        self.up_conv3 = DoubleConv(256, 128)
-        self.up4 = nn.ConvTranspose2d(128, 64, 2, stride=2)
-        self.up_conv4 = DoubleConv(128, 64)
-
-        self.outc = nn.Conv2d(64, n_classes, 1)
-
-    def forward(self, x):
-        x1 = self.inc(x)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x5 = self.down4(x4)
-
-        x = self.up1(x5)
-        x = torch.cat([x, x4], dim=1)
-        x = self.up_conv1(x)
-        x = self.up2(x)
-        x = torch.cat([x, x3], dim=1)
-        x = self.up_conv2(x)
-        x = self.up3(x)
-        x = torch.cat([x, x2], dim=1)
-        x = self.up_conv3(x)
-        x = self.up4(x)
-        x = torch.cat([x, x1], dim=1)
-        x = self.up_conv4(x)
-        logits = self.outc(x)
-        return logits
-
-
 def get_optimal_dimensions(width, height):
     """Images need to be divisible by 2^n"""
     new_width = ((width + 15) // 16) * 16
@@ -112,15 +50,10 @@ def get_color_map(num_classes):
 
 
 def load_unet_model(model_path):
-    try:
-        checkpoint = torch.load(model_path, map_location=device)
-        model = UNet(n_channels=checkpoint['n_channels'], n_classes=checkpoint['num_classes'])
-        model.load_state_dict(checkpoint['model_state_dict'])
-        model = model.to(device)
-        return model
-    except Exception as e:
-        logger.error(f"Failed to load unet model from {model_path}: {e}")
-        return None
+    checkpoint = torch.load(model_path, map_location=device)
+    model = checkpoint['model']
+    model.load_state_dict(checkpoint['model_state_dict'])
+    return model.to(device)
 
 
 def run_inference(model, image):
@@ -143,12 +76,14 @@ def run_inference(model, image):
 
 def process_results(output, original_image, color_map):
     prediction = output.argmax(dim=0).numpy()
-    segmentation_map = color_map[prediction]
+    segmentation_map = np.zeros((*prediction.shape, 3), dtype=np.uint8)
+    for i in range(len(color_map)):
+        segmentation_map[prediction == i] = color_map[i]
 
-    alpha = 0.5  # Adjust this value to change the blend ratio
+    alpha = 0.5
     blended = cv2.addWeighted(original_image, 1 - alpha, segmentation_map.astype(np.uint8), alpha, 0)
 
-    return blended
+    return blended, segmentation_map
 
 
 def unet_inference():
@@ -176,14 +111,19 @@ def unet_inference():
 
             for model_name, model, color_map in models:
                 output = run_inference(model, original_image)
-                segmentation_result = process_results(output, original_image, color_map)
+                segmentation_result, raw_segmentation_map = process_results(output, original_image, color_map)
 
                 model_output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, os.path.splitext(model_name)[0])
                 os.makedirs(model_output_dir, exist_ok=True)
 
-                output_path = os.path.join(model_output_dir, image_filename)
+                output_path_result = os.path.join(model_output_dir, f"raw_{image_filename}")
+                output_path_raw_segmentation = os.path.join(model_output_dir, image_filename)
 
-                cv2.imwrite(output_path, cv2.cvtColor(segmentation_result, cv2.COLOR_RGB2BGR))
+                print(f"Color map: {color_map}")
+
+                cv2.imwrite(output_path_raw_segmentation, cv2.cvtColor(raw_segmentation_map, cv2.COLOR_RGB2BGR))
+                cv2.imwrite(output_path_result, cv2.cvtColor(segmentation_result, cv2.COLOR_RGB2BGR))
+
                 logger.info(f"Processed {image_filename} with {model_name}")
 
             gc.collect()
