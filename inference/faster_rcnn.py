@@ -106,10 +106,11 @@ def frcnn_inference():
 
     print("All images processed with all models!")
 
-def frcnn_main():
-    does_exist = check_directory_content([MODEL_INFERENCE_INPUT, MODEL_INFERENCE_FRCNN_OUTPUT_DIR])
 
-    if does_exist:
+def frcnn_main():
+    frcnn_does_exist = check_directory_content([MODEL_INFERENCE_FRCNN_OUTPUT_DIR])
+
+    if frcnn_does_exist:
         frcnn_inference()
     else:
         print("No frcnn Model has been found.")

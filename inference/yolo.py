@@ -41,9 +41,9 @@ def yolo_inference():
 
 
 def yolo_main():
-    does_exist = check_directory_content([MODEL_INFERENCE_INPUT, MODEL_INFERENCE_YOLO_OUTPUT_DIR])
+    yolo_does_exist = check_directory_content([MODEL_INFERENCE_YOLO_OUTPUT_DIR])
 
-    if does_exist:
+    if yolo_does_exist:
         yolo_inference()
     else:
         print("No YOLO Model has been found.")

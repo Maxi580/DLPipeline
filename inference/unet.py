@@ -2,15 +2,18 @@ import os
 import torch
 import torch.nn as nn
 from torchvision import transforms
-from PIL import Image
 import numpy as np
 import cv2
+import logging
+import gc
 
-from utils import *
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 MODEL_INFERENCE_INPUT = os.getenv('MODEL_INFERENCE_INPUT')
 MODEL_INFERENCE_UNET_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_UNET_OUTPUT_DIR')
-UNET_NUM_CLASSES = os.getenv('UNET_NUM_CLASSES')
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class DoubleConv(nn.Module):
@@ -75,47 +78,42 @@ class UNet(nn.Module):
         return logits
 
 
-def load_unet_model(model_path):
-    state_dict = torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+def ensure_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
-    if isinstance(state_dict, dict):
-        if 'model' in state_dict:
-            model = state_dict['model']
-        else:
-            model = UNet(n_channels=3, n_classes=NUM_CLASSES)
-            model.load_state_dict(state_dict['model_state_dict'])
-        return model.eval()
-    else:
-        raise ValueError("Unexpected format of saved model")
+
+def get_color_map(num_classes):
+    np.random.seed(42)  # for reproducibility
+    return np.array([np.random.randint(0, 256, 3) for _ in range(num_classes)])
+
+
+def load_unet_model(model_path):
+    try:
+        checkpoint = torch.load(model_path, map_location=device)
+        model = UNet(n_channels=checkpoint['n_channels'], n_classes=checkpoint['num_classes'])
+        model.load_state_dict(checkpoint['model_state_dict'])
+        model = model.to(device)
+        return model
+    except Exception as e:
+        logger.error(f"Failed to load unet model from {model_path}: {e}")
+        return None
 
 
 def run_inference(model, image):
     model.eval()
     with torch.no_grad():
-        image_tensor = transforms.ToTensor()(image).unsqueeze(0)
-        if torch.cuda.is_available():
-            image_tensor = image_tensor.cuda()
-            model = model.cuda()
+        image_tensor = transforms.ToTensor()(image).unsqueeze(0).to(device)
         output = model(image_tensor)
         return output.squeeze(0).cpu()
 
 
-def process_results(output, original_image):
-    # Convert the output to a numpy array and apply argmax to get the predicted class for each pixel
+def process_results(output, original_image, color_map):
     prediction = output.argmax(dim=0).numpy()
-
-    # Create a color map for visualization (adjust colors as needed)
-    color_map = np.array([[0, 0, 0],  # Background
-                          [255, 0, 0],  # Class 1
-                          [0, 255, 0],  # Class 2
-                          [0, 0, 255]])  # Class 3 (add more colors if you have more classes)
-
-    # Apply the color map to the prediction
     segmentation_map = color_map[prediction]
 
-    # Blend the segmentation map with the original image
     alpha = 0.5  # Adjust this value to change the blend ratio
-    blended = cv2.addWeighted(original_image, 1 - alpha, segmentation_map, alpha, 0)
+    blended = cv2.addWeighted(original_image, 1 - alpha, segmentation_map.astype(np.uint8), alpha, 0)
 
     return blended
 
@@ -127,35 +125,43 @@ def unet_inference():
             model_path = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, filename)
             try:
                 model = load_unet_model(model_path)
-                models.append((filename, model))
-                print(f"Loaded model: {filename}")
+                if model is not None:
+                    num_classes = model.n_classes
+                    color_map = get_color_map(num_classes)
+                    models.append((filename, model, color_map))
+                    logger.info(f"Loaded model: {filename} with {num_classes} classes")
+                else:
+                    logger.warning(f"Failed to load model: {filename}")
             except Exception as e:
-                print(f"Error loading {filename}: {str(e)}")
+                logger.error(f"Error loading {filename}: {str(e)}")
 
     for image_filename in os.listdir(MODEL_INFERENCE_INPUT):
         if image_filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             input_path = os.path.join(MODEL_INFERENCE_INPUT, image_filename)
+            original_image = cv2.imread(input_path)
+            original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 
-            image = Image.open(input_path).convert('RGB')
-            original_image = np.array(image)
-
-            for model_name, model in models:
-                output = run_inference(model, image)
-
-                segmentation_result = process_results(output, original_image)
+            for model_name, model, color_map in models:
+                output = run_inference(model, original_image)
+                segmentation_result = process_results(output, original_image, color_map)
 
                 base_name, ext = os.path.splitext(image_filename)
-                output_filename = f"{base_name}_{ext}"
-                output_path = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, model_name, output_filename)
+                output_filename = f"{base_name}_{model_name}{ext}"
+                output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, model_name)
+                ensure_dir(output_dir)
+                output_path = os.path.join(output_dir, output_filename)
 
                 cv2.imwrite(output_path, cv2.cvtColor(segmentation_result, cv2.COLOR_RGB2BGR))
-                print(f"Processed {image_filename} with {model_name}")
+                logger.info(f"Processed {image_filename} with {model_name}")
+
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
 
 def unet_main():
-    does_exist = check_directory_content([MODEL_INFERENCE_INPUT, MODEL_INFERENCE_UNET_OUTPUT_DIR])
-
-    if does_exist:
+    if os.path.exists(MODEL_INFERENCE_UNET_OUTPUT_DIR) and os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR):
         unet_inference()
     else:
-        print("No U-net Model has been found.")
+        logger.warning("No U-Net models found in the specified directory.")
+

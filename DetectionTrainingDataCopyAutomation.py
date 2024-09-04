@@ -24,7 +24,7 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "2d85d23aead1c312901242c1633e3e0e69e6bb03f96f7edb241d3147a7f8f9ca"  # Id of data_volume Container
+container_id = "873883c745deabf53e833aa7928d6c1ce7fe36c206f1be325228352b7fd7dc90"  # Id of data_volume Container
 local_path = r"C:\Users\maxie\Desktop\FruitData"  # Path to local images for training, need to be in correct directories (see above)
 container_path = "/data"
 

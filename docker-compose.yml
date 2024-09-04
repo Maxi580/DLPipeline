@@ -27,11 +27,23 @@ services:
               mkdir -p /data/fractals
               mkdir -p /data/inference/models/yolo
               mkdir -p /data/inference/models/fasterrcnn
-              mkdir -p /data/inference/models/u-net
+              mkdir -p /data/inference/models/unet
               mkdir -p /data/inference/input_images
               mkdir -p /data/inference/output_images
               tail -f /dev/null
             "
+  inference:
+    build:
+      context: inference
+      dockerfile: Dockerfile
+    volumes:
+      - data_volume:/data
+      - env_data:/env_data
+    env_file:
+      - ./.env
+    depends_on:
+      - env_manager
+
   web:
     build:
       context: ./app

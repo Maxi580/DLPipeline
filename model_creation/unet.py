@@ -119,10 +119,11 @@ def save_model(model, epoch, optimizer, val_loss, model_dir: str, name: str):
     output_path = os.path.join(output_dir, f"{epoch}_{name}.pth")
     torch.save({
         'epoch': epoch,
-        'model': model,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'val_loss': val_loss,
+        'num_classes': model.n_classes,
+        'n_channels': model.n_channels,
     }, output_path)
     print(f"Model saved to {output_path}")
 
