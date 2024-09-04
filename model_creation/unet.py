@@ -14,7 +14,7 @@ UNET_EPOCHS = int(os.getenv('UNET_EPOCHS'))
 UNET_LR = float(os.getenv('UNET_LR'))
 
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
-MODEL_INFERENCE_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_OUTPUT_DIR')
+MODEL_INFERENCE_UNET_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_UNET_OUTPUT_DIR')
 
 
 class DoubleConv(nn.Module):
@@ -194,7 +194,7 @@ def create_u_net_model(train_image_dir, train_mask_dir, val_image_dir, val_mask_
 
     model = UNet(n_channels=3, n_classes=UNET_NUM_CLASSES)
     final_model, optimizer, val_loss, best_epoch = train_unet(model, train_loader, val_loader, name, UNET_EPOCHS, UNET_LR)
-    inference_output_dir = os.path.join(MODEL_INFERENCE_OUTPUT_DIR, 'u-net')
+    inference_output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR)
     if not os.path.exists(inference_output_dir):
         os.makedirs(inference_output_dir)
     save_model(final_model, best_epoch, optimizer, val_loss, inference_output_dir, name)

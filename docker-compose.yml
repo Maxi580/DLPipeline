@@ -26,10 +26,9 @@ services:
               mkdir -p /data/masks/train
               mkdir -p /data/fractals
               mkdir -p /data/inference/models/yolo
-              mkdir -p /data/inference/models/fasterrcnn
+              mkdir -p /data/inference/models/frcnn
               mkdir -p /data/inference/models/unet
               mkdir -p /data/inference/input_images
-              mkdir -p /data/inference/output_images
               tail -f /dev/null
             "
   inference:

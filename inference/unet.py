@@ -7,6 +7,8 @@ import cv2
 import logging
 import gc
 
+from utils import *
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -122,6 +124,7 @@ def unet_inference():
     models = []
     for filename in os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR):
         if filename.endswith('.pth'):
+            print("Unet Model Found!")
             model_path = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, filename)
             try:
                 model = load_unet_model(model_path)
@@ -146,7 +149,7 @@ def unet_inference():
                 segmentation_result = process_results(output, original_image, color_map)
 
                 base_name, ext = os.path.splitext(image_filename)
-                output_filename = f"{base_name}_{model_name}{ext}"
+                output_filename = f"{base_name}_{ext}"
                 output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, model_name)
                 ensure_dir(output_dir)
                 output_path = os.path.join(output_dir, output_filename)
@@ -160,8 +163,8 @@ def unet_inference():
 
 
 def unet_main():
-    if os.path.exists(MODEL_INFERENCE_UNET_OUTPUT_DIR) and os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR):
+    if check_directory_content([MODEL_INFERENCE_UNET_OUTPUT_DIR]):
         unet_inference()
     else:
-        logger.warning("No U-Net models found in the specified directory.")
+        print("No U-Net models found in the specified directory.")
 

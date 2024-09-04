@@ -8,15 +8,12 @@ from torchvision.models.detection import (
     fasterrcnn_resnet50_fpn_v2
 )
 import cv2
-from PIL import Image
-import numpy as np
-
 from utils import *
 
 MODEL_INFERENCE_INPUT = os.getenv('MODEL_INFERENCE_INPUT')
 MODEL_INFERENCE_FRCNN_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_FRCNN_OUTPUT_DIR')
 
-IOU_THRESHOLD = os.getenv('IOU_THRESHOLD')
+IOU_THRESHOLD = float(os.getenv('IOU_THRESHOLD'))
 
 AVAILABLE_MODELS = {
     'fasterrcnn_resnet50_fpn': torchvision.models.detection.fasterrcnn_resnet50_fpn,
@@ -92,17 +89,23 @@ def frcnn_inference():
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             for model_name, model in models:
-                results = run_inference(model, image)
+                try:
+                    results = run_inference(model, image)
 
-                output_image = process_results(results, image.copy())
-                output_image = cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR)
+                    output_image = process_results(results, image.copy())
+                    output_image = cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR)
 
-                base_name, ext = os.path.splitext(image_filename)
-                output_filename = f"{base_name}_{ext}"
-                output_path = os.path.join(MODEL_INFERENCE_FRCNN_OUTPUT_DIR, model_name, output_filename)
+                    model_output_dir = os.path.join(MODEL_INFERENCE_FRCNN_OUTPUT_DIR, os.path.splitext(model_name)[0])
+                    os.makedirs(model_output_dir, exist_ok=True)
 
-                cv2.imwrite(output_path, output_image)
-                print(f"Processed {image_filename} with {model_name}")
+                    output_filename = (f"{os.path.splitext(image_filename)[0]}_{model_name}"
+                                       f"{os.path.splitext(image_filename)[1]}")
+                    output_path = os.path.join(model_output_dir, output_filename)
+
+                    cv2.imwrite(output_path, output_image)
+                    print(f"Processed {image_filename} with {model_name}. Location: {output_path}")
+                except Exception as e:
+                    print(f"Error processing {image_filename}: {str(e)}")
 
     print("All images processed with all models!")
 

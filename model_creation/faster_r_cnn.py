@@ -22,6 +22,7 @@ PRETRAINED = bool(os.getenv('PRETRAINED'))
 FRCNN_EPOCHS = int(os.getenv('FRCNN_EPOCHS'))
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
 FRCNN_BATCH_SIZE = int(os.getenv('FRCNN_BATCH_SIZE'))
+MODEL_INFERENCE_FRCNN_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_FRCNN_OUTPUT_DIR')
 
 OPTIMIZER_LEARNING_RATE = float(os.getenv('OPTIMIZER_LEARNING_RATE'))
 OPTIMIZER_MOMENTUM = float(os.getenv('OPTIMIZER_MOMENTUM'))
@@ -328,10 +329,10 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
                     print("Early stopping")
                     break
 
-            inference_output_dir = os.path.join(MODEL_INFERENCE_OUTPUT_DIR, 'u-net')
+            inference_output_dir = os.path.join(MODEL_INFERENCE_FRCNN_OUTPUT_DIR)
             if not os.path.exists(inference_output_dir):
                 os.makedirs(inference_output_dir)
             save_model(best_model, best_model_epoch, optimizer, best_mAP, name, rcnn_model, inference_output_dir)
-            print(f"Faster RCNN {model} has finished")
+            print(f"Faster RCNN {model} has finished. Saved to {inference_output_dir}")
         else:
             print(f"Warning: Please Select a valid Faster RCNN Model.")
