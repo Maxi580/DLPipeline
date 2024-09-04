@@ -18,6 +18,14 @@ MODEL_INFERENCE_UNET_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_UNET_OUTPUT_DIR')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+PREDEFINED_COLOURS = [
+    [255, 0, 0],  # Red
+    [0, 0, 255],  # Blue
+    [255, 255, 0],  # Yellow
+    [0, 255, 0],  # Green
+    [255, 0, 255],  # Magenta
+]
+
 
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -94,8 +102,13 @@ def ensure_dir(directory):
 
 
 def get_color_map(num_classes):
-    np.random.seed(42)  # for reproducibility
-    return np.array([np.random.randint(0, 256, 3) for _ in range(num_classes)])
+    """If there are up to 5 classes we use predefined colours to ensure good contrast, if there are more we generate
+       randomly"""
+    if num_classes <= 5:
+        return np.array(PREDEFINED_COLOURS[:num_classes])
+    else:
+        np.random.seed(42)
+        return np.array([np.random.randint(0, 256, 3) for _ in range(num_classes)])
 
 
 def load_unet_model(model_path):
