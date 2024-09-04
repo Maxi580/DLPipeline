@@ -116,7 +116,7 @@ def save_model(model, epoch, optimizer, val_loss, model_dir: str, name: str):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    output_path = os.path.join(output_dir, f"{epoch}_{name}.pth")
+    output_path = os.path.join(output_dir + f"{epoch}_{name}.pth")
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),

@@ -122,6 +122,8 @@ def process_results(output, original_image, color_map):
 
 def unet_inference():
     models = []
+    print(f"Directory: {MODEL_INFERENCE_UNET_OUTPUT_DIR}")
+    print(f"List: {os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR)}")
     for filename in os.listdir(MODEL_INFERENCE_UNET_OUTPUT_DIR):
         if filename.endswith('.pth'):
             print("Unet Model Found!")
@@ -164,6 +166,7 @@ def unet_inference():
 
 def unet_main():
     if check_directory_content([MODEL_INFERENCE_UNET_OUTPUT_DIR]):
+        print("Starting unet inference")
         unet_inference()
     else:
         print("No U-Net models found in the specified directory.")
