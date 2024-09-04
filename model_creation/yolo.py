@@ -16,6 +16,7 @@ MAPPING_FILE = os.getenv('MAPPING_FILE')
 MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
 MODEL_INFERENCE_YOLO_OUTPUT_DIR = os.getenv('MODEL_INFERENCE_YOLO_OUTPUT_DIR')
 
+
 def determine_number_of_classes(annotations_path):
     """Returns how many classes there are, by going through every annotation file (in train_labels)"""
     class_ids = set()
