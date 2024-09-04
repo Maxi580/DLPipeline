@@ -9,8 +9,11 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 UNET_BATCH_SIZE = int(os.getenv('UNET_BATCH_SIZE'))
 UNET_NUM_CLASSES = int(os.getenv('UNET_NUM_CLASSES'))
+UNET_NUM_WORKERS = int(os.getenv('UNET_NUM_WORKERS'))
 UNET_EPOCHS = int(os.getenv('UNET_EPOCHS'))
 UNET_LR = float(os.getenv('UNET_LR'))
+
+MODEL_OUTPUT_DIR = os.getenv('MODEL_OUTPUT_DIR')
 
 
 class DoubleConv(nn.Module):
@@ -107,6 +110,22 @@ class SegmentationDataset(Dataset):
         return image, mask
 
 
+def save_model(model, epoch, optimizer, val_loss, name):
+    output_dir = os.path.join(MODEL_OUTPUT_DIR, name)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    output_path = os.path.join(output_dir, f"{epoch}_{name}.pth")
+    torch.save({
+        'epoch': epoch,
+        'model': model,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'val_loss': val_loss,
+    }, output_path)
+    print(f"Model saved to {output_path}")
+
+
 def train_unet(model, train_loader, val_loader, name, num_epochs, learning_rate):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -118,7 +137,6 @@ def train_unet(model, train_loader, val_loader, name, num_epochs, learning_rate)
 
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
-    best_val_loss = float('inf')
     for epoch in range(num_epochs):
         print(f"Starting with epoch: {epoch}")
         model.train()
@@ -148,17 +166,12 @@ def train_unet(model, train_loader, val_loader, name, num_epochs, learning_rate)
                 loss = criterion(outputs, masks.squeeze(1).long())
                 val_loss += loss.item()
 
-        print(
-            f'Epoch {epoch + 1}/{num_epochs}, Train Loss: {train_loss / len(train_loader):.4f}, Val Loss: {val_loss / len(val_loader):.4f}')
-
         scheduler.step(val_loss)
 
         print(f"Learning Rate: {scheduler.get_last_lr()}")
 
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(model.state_dict(), name + '.pth')
-            print(f"Best model saved with validation loss: {best_val_loss:.4f}")
+        save_model(model, epoch, optimizer, val_loss, name)
+        print(f"Model {epoch} saved with validation loss: {val_loss:.4f} and training loss: {train_loss:.4f}")
 
     return model
 
@@ -167,9 +180,8 @@ def create_u_net_model(train_image_dir, train_mask_dir, val_image_dir, val_mask_
     train_dataset = SegmentationDataset(train_image_dir, train_mask_dir)
     val_dataset = SegmentationDataset(val_image_dir, val_mask_dir)
 
-    train_loader = DataLoader(train_dataset, batch_size=UNET_BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=UNET_BATCH_SIZE, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=UNET_BATCH_SIZE, shuffle=True, num_workers=UNET_NUM_WORKERS)
+    val_loader = DataLoader(val_dataset, batch_size=UNET_BATCH_SIZE, shuffle=False, num_workers=UNET_NUM_WORKERS)
 
     model = UNet(n_channels=3, n_classes=UNET_NUM_CLASSES)
-    trained_model = train_unet(model, train_loader, val_loader, name, UNET_EPOCHS, UNET_LR)
-    torch.save(trained_model.state_dict(), f"final-{name}.pth")
+    train_unet(model, train_loader, val_loader, name, UNET_EPOCHS, UNET_LR)

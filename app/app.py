@@ -19,6 +19,7 @@ def config_page():
             'UNET_WITHOUT_AUGMENTATION': request.form['UNET_WITHOUT_AUGMENTATION'],
             'UNET_BATCH_SIZE': request.form['UNET_BATCH_SIZE'],
             'UNET_NUM_CLASSES': request.form['UNET_NUM_CLASSES'],
+            'UNET_NUM_WORKERS': request.form['UNET_NUM_WORKERS'],
             'UNET_EPOCHS': request.form['UNET_EPOCHS'],
             'UNET_LR': request.form['UNET_LR'],
             'FRCNN_MODELS': request.form.getlist('FRCNN_MODELS[]'),

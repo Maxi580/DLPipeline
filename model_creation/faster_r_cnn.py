@@ -267,7 +267,7 @@ def save_model(model, epoch, optimizer, loss, name, architecture):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    output_path = os.path.join(output_dir, f"{name}.pth")
+    output_path = os.path.join(output_dir, f"{epoch}_{name}_{architecture}.pth")
     torch.save({
         'epoch': epoch,
         'model': model,
@@ -309,7 +309,7 @@ def create_faster_rcnn_model(train_image_dir, train_label_dir, val_image_dir, va
                 mAP = evaluate(model, val_loader, device)
                 scheduler.step()
 
-                save_model(model, epoch, optimizer, loss, f"{name}_{rcnn_model}", rcnn_model)
+                save_model(model, epoch, optimizer, loss, name, rcnn_model)
                 print(f"Epoch {epoch + 1}, Loss: {loss}, Validation mAP: {mAP}")
 
                 early_stopping(mAP)

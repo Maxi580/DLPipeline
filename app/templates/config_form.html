@@ -484,6 +484,11 @@
                            min="0" max="100" step="1" value="2">
                 </div>
                 <div class="form-group">
+                    <label for="UNET_NUM_WORKERS">Number of Workers (Dataloader):</label>
+                    <input type="number" id="UNET_NUM_WORKERS" name="UNET_NUM_WORKERS"
+                           min="0" max="100" step="1" value="4">
+                </div>
+                <div class="form-group">
                     <label for="UNET_EPOCHS">Epochs:</label>
                     <input type="number" id="UNET_EPOCHS" name="UNET_EPOCHS"
                            min="0" max="100" step="1" value="10">
@@ -500,7 +505,6 @@
                            min="0" max="10000" step="1" value="200">
                 </div>
                 <button type="submit">Save Configuration!</button>
-            </div>
         </form>
     </div>
 
