@@ -114,24 +114,49 @@ def mix_images(image, fractal, alpha):
     return Image.blend(image, fractal, alpha)
 
 
-def detection_random_augmentation(image, annotations):
+def detection_geometrical_augmentation(image, annotations):
     """Using Albumentations for augmentation, annotations get adjusted automatically"""
     image_np = np.array(image)
+    height, width = image_np.shape[:2]
 
-    bboxes = [[ann[1], ann[2], ann[3], ann[4]] for ann in annotations]
-    class_labels = [int(ann[0]) for ann in annotations]
+    # Convert YOLO format to COCO format
+    bboxes = []
+    class_labels = []
+    for ann in annotations:
+        class_id, x_center, y_center, bbox_width, bbox_height = ann
+        x_min = int((x_center - bbox_width / 2) * width)
+        y_min = int((y_center - bbox_height / 2) * height)
+        bbox_width = int(bbox_width * width)
+        bbox_height = int(bbox_height * height)
+        bboxes.append([x_min, y_min, bbox_width, bbox_height])
+        class_labels.append(int(class_id))
 
-    aug = random.choice(get_augmentations())
-    aug_with_bbox = A.Compose([aug], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
+    aug = random.choice(get_geometrical_augmentations())
+    aug_with_bbox = A.Compose([aug], bbox_params=A.BboxParams(format='coco', label_fields=['class_labels']))
 
-    augmented = aug_with_bbox(image=image_np, bboxes=bboxes, class_labels=class_labels)
-    image_aug = augmented['image']
-    bboxes_aug = augmented['bboxes']
-    labels_aug = augmented['class_labels']
+    try:
+        augmented = aug_with_bbox(image=image_np, bboxes=bboxes, class_labels=class_labels)
 
-    aug_annotations = [[int(label)] + list(bbox) for label, bbox in zip(labels_aug, bboxes_aug)]
+        image_aug = augmented['image']
+        bboxes_aug = augmented['bboxes']
+        labels_aug = augmented['class_labels']
 
-    return Image.fromarray(image_aug), aug_annotations
+        # Convert COCO format back to YOLO format
+        aug_height, aug_width = image_aug.shape[:2]
+        aug_annotations = []
+        for bbox, label in zip(bboxes_aug, labels_aug):
+            x_min, y_min, bbox_width, bbox_height = bbox
+            x_center = (x_min + bbox_width / 2) / aug_width
+            y_center = (y_min + bbox_height / 2) / aug_height
+            width = bbox_width / aug_width
+            height = bbox_height / aug_height
+            aug_annotations.append([int(label), x_center, y_center, width, height])
+
+        return Image.fromarray(image_aug), aug_annotations
+
+    except ValueError as e:
+        print(f"Augmentation failed: {e}")
+        return image, annotations
 
 
 def segmentation_geometrical_augmentation(image, mask):
@@ -149,7 +174,7 @@ def segmentation_geometrical_augmentation(image, mask):
     return Image.fromarray(image_aug), Image.fromarray(mask_aug)
 
 
-def segmentation_graphical_augmentation(image):
+def graphical_augmentation(image):
     """Applies graphical Augmentations to an image used for Segmentation"""
     image_np = np.array(image)
 
@@ -172,11 +197,14 @@ def apply_fractal(image, mixing_set):
     return image
 
 
-def apply_detection_pixmix(image, annotation, mixing_set):
+def apply_detection_pixmix(image, annotation, mixing_set, geometrical_probability):
     """Augmentation inspired by Dreamlike Pixmix Repo"""
     # Apply random augmentation
     if random.random() <= PIXMIX_AUGMENTATION_PROBABILITY:
-        image, annotation = detection_random_augmentation(image, annotation)
+        if random.random() <= geometrical_probability:
+            image, annotation = detection_geometrical_augmentation(image, annotation)
+        else:
+            image = graphical_augmentation(image)
 
     image = apply_fractal(image, mixing_set)
 
@@ -185,12 +213,13 @@ def apply_detection_pixmix(image, annotation, mixing_set):
 
 def apply_segmentation_pixmix(image, mask, mixing_set, geometrical_probability):
     """Augmentation, but geometrical augmentations also get applied to the mask"""
+    print("Segmentation Pixmix gets applied")
     # Randomly apply augmentation
     if random.random() <= PIXMIX_MIXING_PROBABILITY:
         if random.random() <= geometrical_probability:
             image, mask = segmentation_geometrical_augmentation(image, mask)
         else:
-            image = segmentation_graphical_augmentation(image)
+            image = graphical_augmentation(image)
 
     image = apply_fractal(image, mixing_set)
 
@@ -210,8 +239,8 @@ def pixmix_setup(image_output_dir, annotation_output_dir):
 def detection_pixmix(image_input_dir, image_output_dir, annotation_input_dir, annotation_output_dir):
     """Main augmentation function for Image Detection. Goes through all images, finds annotations.
        Augments Images and adjusts annotations accordingly  (To geographical Changes in Base image)."""
-
     mixing_set = pixmix_setup(image_output_dir, annotation_output_dir)
+    geometrical_probability = len(get_geometrical_augmentations()) / len(get_augmentations())
 
     list_of_images = os.listdir(image_input_dir)
     list_of_annotations = os.listdir(annotation_input_dir)
@@ -236,7 +265,8 @@ def detection_pixmix(image_input_dir, image_output_dir, annotation_input_dir, an
                                 annotations = read_yolo_annotation(
                                     os.path.join(annotation_input_dir, annotation_filename))
                                 augmented_img, augmented_annotations = apply_detection_pixmix(image, annotations,
-                                                                                              mixing_set)
+                                                                                              mixing_set,
+                                                                                              geometrical_probability)
 
                                 output_image_filename = f"{cntr}.{image_filename}"
                                 image_output_path = os.path.join(image_output_dir, output_image_filename)
@@ -258,7 +288,6 @@ def detection_pixmix(image_input_dir, image_output_dir, annotation_input_dir, an
 def segmentation_pixmix(image_input_dir, image_output_dir, mask_input_dir, mask_output_dir):
     """Main function for segmentation Augmentation. Goes through all images, and also applies geographical Changes
        to the mask. It's very similar. Repetitive Code might be cleaned up sometime."""
-
     mixing_set = pixmix_setup(image_output_dir, mask_output_dir)
     geometrical_probability = len(get_geometrical_augmentations()) / len(get_augmentations())
 

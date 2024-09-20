@@ -6,10 +6,10 @@ import os
 def docker_cp_to_container(local_path, container_id, container_path):
     local_path = os.path.normpath(local_path)
 
-    command_a_t = f'docker cp {local_path}/annotations/train {container_id}:{container_path}/labels'
-    command_a_v = f'docker cp {local_path}/annotations/val {container_id}:{container_path}/labels'
-    command_i_t = f'docker cp {local_path}/images/train {container_id}:{container_path}/images'
-    command_i_v = f'docker cp {local_path}/images/val {container_id}:{container_path}/images'
+    command_a_t = f'docker cp {local_path}/train/images {container_id}:{container_path}/images/train'
+    command_a_v = f'docker cp {local_path}/train/labels {container_id}:{container_path}/labels/train'
+    command_i_t = f'docker cp {local_path}/test/images {container_id}:{container_path}/images/val'
+    command_i_v = f'docker cp {local_path}/test/labels {container_id}:{container_path}/labels/val'
 
     try:
         subprocess.run(command_a_t, check=True, shell=True, capture_output=True, text=True)
@@ -24,8 +24,8 @@ def docker_cp_to_container(local_path, container_id, container_path):
         return False
 
 
-container_id = "a3558c25a9da5768021f2dfe58c7a5031c31567e716edc7c9e0783e271f3d1c6"  # Id of data_volume Container
-local_path = r"C:\Users\maxie\Desktop\FruitData"  # Path to local images for training, need to be in correct directories (see above)
+container_id = "44147262d06d2f45447e677780a8f9a169666c4f4634995d0736dc09243c2281"  # Id of data_volume Container
+local_path = r"C:\Users\maxie\Desktop\TreeDataset"  # Path to local images for training, need to be in correct directories (see above)
 container_path = "/data"
 
 if __name__ == '__main__':

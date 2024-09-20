@@ -174,7 +174,7 @@ def unet_inference():
                 output = run_inference(model, original_image)
                 segmentation_result, raw_segmentation_map = process_results(output, original_image, color_map)
 
-                model_output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR, os.path.splitext(model_name)[0])
+                model_output_dir = os.path.join(MODEL_INFERENCE_UNET_OUTPUT_DIR)
                 os.makedirs(model_output_dir, exist_ok=True)
 
                 output_path_result = os.path.join(model_output_dir, f"raw_{image_filename}")
