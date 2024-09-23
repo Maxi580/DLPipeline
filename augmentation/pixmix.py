@@ -34,7 +34,7 @@ def get_augmentations():
 
 
 def get_graphical_augmentations():
-    return geometrical_augmentations
+    return graphical_augmentations
 
 
 def get_geometrical_augmentations():
