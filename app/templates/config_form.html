@@ -217,6 +217,112 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="ENABLE_SHEAR">Enable Shear:</label>
+                        <select id="ENABLE_SHEAR" name="ENABLE_SHEAR">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="SHEAR_DEGREE_LIMIT">Shear Degree Limit:</label>
+                        <input type="number" id="SHEAR_DEGREE_LIMIT" name="SHEAR_DEGREE_LIMIT" min="0" max="90" value="20">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="RGB_SHIFT">Enable RGB Shift:</label>
+                        <select id="RGB_SHIFT" name="RGB_SHIFT">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="RGB_SHIFT_LIMIT">RGB Shift Limit :</label>
+                        <input type="number" id="RGB_SHIFT_LIMIT" name="RGB_SHIFT_LIMIT" min="0" max="360" step="1"
+                               value="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="CHANNEL_SHUFFLE">Enable Channel Shuffle :</label>
+                        <select id="CHANNEL_SHUFFLE" name="CHANNEL_SHUFFLE">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="CLAHE">Enable CLAHE:</label>
+                        <select id="CLAHE" name="CLAHE">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="CLAHE_CLIP_LIMIT">CLAHE clip Limit :</label>
+                        <input type="number" id="CLAHE_CLIP_LIMIT" name="CLAHE_CLIP_LIMIT" min="0" max="1000" step="0.1"
+                               value="4.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ENABLE_BLUR">Enable Blur:</label>
+                        <select id="ENABLE_BLUR" name="ENABLE_BLUR">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="BLUR_LIMIT">Blur Limit:</label>
+                        <input type="number" id="BLUR_LIMIT" name="BLUR_LIMIT" min="0" max="100" step="1"
+                               value="7">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ENABLE_MEDIAN_BLUR">Enable Median Blur:</label>
+                        <select id="ENABLE_MEDIAN_BLUR" name="ENABLE_MEDIAN_BLUR">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="MEDIAN_BLUR_LIMIT">Median Blur Limit:</label>
+                        <input type="number" id="MEDIAN_BLUR_LIMIT" name="MEDIAN_BLUR_LIMIT" min="0" max="100" step="1"
+                               value="7">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="TO_GRAY">Enable to Gray:</label>
+                        <select id="TO_GRAY" name="TO_GRAY">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="COMPRESSION">Enable Compression:</label>
+                        <select id="COMPRESSION" name="COMPRESSION">
+                            <option value="TRUE">Yes</option>
+                            <option value="FALSE">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="COMPRESSION_LOWER_LIMIT">Compression Lower Limit:</label>
+                        <input type="number" id="COMPRESSION_LOWER_LIMIT" name="COMPRESSION_LOWER_LIMIT" min="0" max="1000" step="1"
+                               value="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="COMPRESSION_UPPER_LIMIT">Compression Upper Limit:</label>
+                        <input type="number" id="COMPRESSION_UPPER_LIMIT" name="COMPRESSION_UPPER_LIMIT" min="0" max="1000" step="1"
+                               value="90">
+                    </div>
+
+
+                    <div class="form-group">
                         <label for="ENABLE_HUE_SATURATION">Enable Hue Saturation:</label>
                         <select id="ENABLE_HUE_SATURATION" name="ENABLE_HUE_SATURATION">
                             <option value="TRUE">Yes</option>
@@ -257,36 +363,6 @@
                         <input type="number" id="CONTRAST_LIMIT" name="CONTRAST_LIMIT" min="0" max="1" step="0.1" value="0.2">
                     </div>
 
-                    <div class="form-group">
-                        <label for="ENABLE_SHEAR">Enable Shear:</label>
-                        <select id="ENABLE_SHEAR" name="ENABLE_SHEAR">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="SHEAR_DEGREE_LIMIT">Shear Degree Limit:</label>
-                        <input type="number" id="SHEAR_DEGREE_LIMIT" name="SHEAR_DEGREE_LIMIT" min="0" max="90" value="20">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ENABLE_GAUSSIAN_BLUR">Enable Gaussian Blur:</label>
-                        <select id="ENABLE_GAUSSIAN_BLUR" name="ENABLE_GAUSSIAN_BLUR">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="GAUSSIAN_BLUR_MINIMUM">Gaussian Blur Minimum:</label>
-                        <input type="number" id="GAUSSIAN_BLUR_MINIMUM" name="GAUSSIAN_BLUR_MINIMUM" min="0" max="10" value="3">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="GAUSSIAN_BLUR_MAX">Gaussian Blur Maximum:</label>
-                        <input type="number" id="GAUSSIAN_BLUR_MAX" name="GAUSSIAN_BLUR_MAX" min="0" max="10" value="5">
-                    </div>
 
                     <div class="form-group">
                         <label for="ENABLE_GAUSSIAN_NOISE">Enable Gaussian Noise:</label>
@@ -304,46 +380,6 @@
                     <div class="form-group">
                         <label for="RANDOM_GAMMA_LIMIT">Random Gamma Limit:</label>
                         <input type="number" id="RANDOM_GAMMA_LIMIT" name="RANDOM_GAMMA_LIMIT" min="0" max="1" step="0.1" value="0.2">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ENABLE_RANDOM_RAIN">Enable Random Rain:</label>
-                        <select id="ENABLE_RANDOM_RAIN" name="ENABLE_RANDOM_RAIN">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ENABLE_RANDOM_FOG">Enable Random Fog:</label>
-                        <select id="ENABLE_RANDOM_FOG" name="ENABLE_RANDOM_FOG">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ENABLE_RANDOM_SNOW">Enable Random Snow:</label>
-                        <select id="ENABLE_RANDOM_SNOW" name="ENABLE_RANDOM_SNOW">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ENABLE_RANDOM_SHADOW">Enable Random Shadow:</label>
-                        <select id="ENABLE_RANDOM_SHADOW" name="ENABLE_RANDOM_SHADOW">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ENABLE_RANDOM_SUNFLARE">Enable Random Sunflare:</label>
-                        <select id="ENABLE_RANDOM_SUNFLARE" name="ENABLE_RANDOM_SUNFLARE">
-                            <option value="TRUE">Yes</option>
-                            <option value="FALSE">No</option>
-                        </select>
                     </div>
 
                     <div class="form-group">

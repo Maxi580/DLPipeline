@@ -1,7 +1,4 @@
 import random
-
-import numpy as np
-
 from utils import *
 import albumentations as A
 
@@ -46,6 +43,7 @@ def get_geometrical_augmentations():
 
 def update_augmentations(geometrical_augmentations, graphical_augmentations):
     """Read every Augmentation Configuration from .env and update it. The Result is a valid Albumentations list."""
+    # Geometrical
     if get_env_bool('ENABLE_HORIZONTAL_FLIP'):
         geometrical_augmentations.append(A.HorizontalFlip(p=1.0))
 
@@ -56,6 +54,16 @@ def update_augmentations(geometrical_augmentations, graphical_augmentations):
         rotate_limit = get_env_int('ROTATE_LIMIT', 45)
         geometrical_augmentations.append(A.Rotate(limit=rotate_limit, p=1.0))
 
+    if get_env_bool('ENABLE_SHEAR'):
+        shear_degree_limit = get_env_float('SHEAR_DEGREE_LIMIT', 20)
+        geometrical_augmentations.append(A.Affine(shear=(-shear_degree_limit, shear_degree_limit), p=1.0))
+
+    # Graphical
+    if get_env_bool('RGB_SHIFT'):
+        rgb_shift_limit = get_env_int('RGB_SHIFT_LIMIT', 30)
+        graphical_augmentations.append(A.RGBShift(r_shift_limit=rgb_shift_limit, g_shift_limit=rgb_shift_limit,
+                                                  b_shift_limit=rgb_shift_limit, p=1.0))
+
     if get_env_bool('ENABLE_HUE_SATURATION'):
         hue_shift = get_env_int('HUE_SHIFT_LIMIT', 10)
         sat_shift = get_env_int('SAT_SHIFT_LIMIT', 10)
@@ -64,6 +72,12 @@ def update_augmentations(geometrical_augmentations, graphical_augmentations):
                                                             sat_shift_limit=sat_shift,
                                                             val_shift_limit=val_shift,
                                                             p=1.0))
+    if get_env_bool('CHANNEL_SHUFFLE'):
+        graphical_augmentations.append(A.ChannelShuffle(p=1.0))
+
+    if get_env_bool('CLAHE'):
+        clip_limit = get_env_float('CLAHE_CLIP_LIMIT', 4.0)
+        graphical_augmentations.append(A.CLAHE(clip_limit=clip_limit, tile_grid_size=(8, 8), p=1.0))
 
     if get_env_bool('ENABLE_BRIGHTNESS_CONTRAST'):
         brightness_limit = get_env_float('BRIGHTNESS_LIMIT', 0.2)
@@ -71,37 +85,29 @@ def update_augmentations(geometrical_augmentations, graphical_augmentations):
         graphical_augmentations.append(A.RandomBrightnessContrast(brightness_limit=brightness_limit,
                                                                   contrast_limit=contrast_limit,
                                                                   p=1.0))
-    if get_env_bool('ENABLE_SHEAR'):
-        shear_degree_limit = get_env_float('SHEAR_DEGREE_LIMIT', 20)
-        geometrical_augmentations.append(A.Affine(shear=(-shear_degree_limit, shear_degree_limit), p=1.0))
-
-    if get_env_bool('ENABLE_GAUSSIAN_BLUR'):
-        blur_min = get_env_int('GAUSSIAN_BLUR_MINIMUM', 3)
-        blur_max = get_env_int('GAUSSIAN_BLUR_MAX', 5)
-        graphical_augmentations.append(A.GaussianBlur(blur_limit=(blur_min, blur_max), p=1.0))
-
-    if get_env_bool('ENABLE_GAUSSIAN_NOISE'):
-        var_limit = get_env_float('NOISE_VAR_LIMIT', 0.05)
-        graphical_augmentations.append(A.GaussNoise(var_limit=var_limit, p=1.0))
-
     if get_env_bool('ENABLE_RANDOM_GAMMA'):
         gamma_limit = get_env_int('RANDOM_GAMMA_LIMIT', 1)
         graphical_augmentations.append(A.RandomGamma(gamma_limit=gamma_limit, p=1.0))
 
-    if get_env_bool('ENABLE_RANDOM_RAIN'):
-        graphical_augmentations.append(A.RandomRain(p=1.0))
+    if get_env_bool('ENABLE_BLUR'):
+        blur_limit = get_env_int('BLUR_LIMIT', 7)
+        graphical_augmentations.append(A.Blur(blur_limit=blur_limit, p=1.0))
 
-    if get_env_bool('ENABLE_RANDOM_FOG'):
-        graphical_augmentations.append(A.RandomFog(p=1.0))
+    if get_env_bool('ENABLE_MEDIAN_BLUR'):
+        median_blur_limit = get_env_int('MEDIAN_BLUR_LIMIT', 7)
+        graphical_augmentations.append(A.MedianBlur(blur_limit=median_blur_limit, p=1.0))
 
-    if get_env_bool('ENABLE_RANDOM_SNOW'):
-        graphical_augmentations.append(A.RandomSnow(p=1.0))
+    if get_env_bool('TO_GRAY'):
+        graphical_augmentations.append(A.ToGray(p=1.0))
 
-    if get_env_bool('ENABLE_RANDOM_SHADOW'):
-        graphical_augmentations.append(A.RandomShadow(p=1.0))
-
-    if get_env_bool('ENABLE_RANDOM_SUNFLARE'):
-        graphical_augmentations.append(A.RandomSunFlare(p=1.0))
+    if get_env_bool('COMPRESSION'):
+        compression_lower_limit = get_env_int('COMPRESSION_LOWER_LIMIT', 50)
+        compression_upper_limit = get_env_int('COMPRESSION_UPPER_LIMIT', 90)
+        graphical_augmentations.append(A.ImageCompression(quality_range=(compression_lower_limit,
+                                                                         compression_upper_limit), p=1.0))
+    if get_env_bool('ENABLE_GAUSSIAN_NOISE'):
+        var_limit = get_env_float('NOISE_VAR_LIMIT', 0.05)
+        graphical_augmentations.append(A.GaussNoise(var_limit=var_limit, p=1.0))
 
 
 def mix_images(image, fractal, alpha):
@@ -117,19 +123,9 @@ def mix_images(image, fractal, alpha):
 def detection_geometrical_augmentation(image, annotations):
     """Using Albumentations for augmentation, annotations get adjusted automatically"""
     image_np = np.array(image)
-    height, width = image_np.shape[:2]
+    image_height, image_width = image_np.shape[:2]
 
-    # Convert YOLO format to COCO format
-    bboxes = []
-    class_labels = []
-    for ann in annotations:
-        class_id, x_center, y_center, bbox_width, bbox_height = ann
-        x_min = int((x_center - bbox_width / 2) * width)
-        y_min = int((y_center - bbox_height / 2) * height)
-        bbox_width = int(bbox_width * width)
-        bbox_height = int(bbox_height * height)
-        bboxes.append([x_min, y_min, bbox_width, bbox_height])
-        class_labels.append(int(class_id))
+    bboxes, class_labels = yolo_to_coco(annotations, image_width, image_height)
 
     aug = random.choice(get_geometrical_augmentations())
     aug_with_bbox = A.Compose([aug], bbox_params=A.BboxParams(format='coco', label_fields=['class_labels']))
@@ -141,16 +137,7 @@ def detection_geometrical_augmentation(image, annotations):
         bboxes_aug = augmented['bboxes']
         labels_aug = augmented['class_labels']
 
-        # Convert COCO format back to YOLO format
-        aug_height, aug_width = image_aug.shape[:2]
-        aug_annotations = []
-        for bbox, label in zip(bboxes_aug, labels_aug):
-            x_min, y_min, bbox_width, bbox_height = bbox
-            x_center = (x_min + bbox_width / 2) / aug_width
-            y_center = (y_min + bbox_height / 2) / aug_height
-            width = bbox_width / aug_width
-            height = bbox_height / aug_height
-            aug_annotations.append([int(label), x_center, y_center, width, height])
+        aug_annotations = coco_to_yolo(bboxes_aug, labels_aug, image_width, image_height)
 
         return Image.fromarray(image_aug), aug_annotations
 

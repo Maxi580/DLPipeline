@@ -58,3 +58,33 @@ def load_image_set(directory_path):
             image_paths.append(image_path)
 
     return image_paths
+
+
+def yolo_to_coco(annotations, image_width, image_height):
+    """Converts annotations from yolo into coco format, because we have albumentation issues
+       where bbox values after aug are not between 0.0 and 1.0 but e.g. 1.0 * e^-7 which causes an error
+    """
+    bboxes = []
+    class_labels = []
+    for ann in annotations:
+        class_id, x_center, y_center, bbox_width, bbox_height = ann
+        x_min = int((x_center - bbox_width / 2) * image_width)
+        y_min = int((y_center - bbox_height / 2) * image_height)
+        bbox_width = int(bbox_width * image_width)
+        bbox_height = int(bbox_height * image_height)
+        bboxes.append([x_min, y_min, bbox_width, bbox_height])
+        class_labels.append(int(class_id))
+    return bboxes, class_labels
+
+
+def coco_to_yolo(bboxes, labels, image_width, image_height):
+    """Converts annotations back from coco format to yolo format"""
+    yolo_annotations = []
+    for bbox, label in zip(bboxes, labels):
+        x_min, y_min, bbox_width, bbox_height = bbox
+        x_center = (x_min + bbox_width / 2) / image_width
+        y_center = (y_min + bbox_height / 2) / image_height
+        width = bbox_width / image_width
+        height = bbox_height / image_height
+        yolo_annotations.append([int(label), x_center, y_center, width, height])
+    return yolo_annotations
