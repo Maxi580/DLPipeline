@@ -56,3 +56,28 @@ def save_class_mapping(mapping_file, class_mapping):
     yaml_mapping = {str(class_id): class_name for class_name, class_id in class_mapping.items()}
     with open(mapping_file, 'w') as f:
         yaml.safe_dump(yaml_mapping, f, default_flow_style=False)
+
+
+def parse_txt_annotation(annotation):
+    parts = annotation.split()
+    if len(parts) != 5:
+        raise ValueError("Invalid annotation format")
+    return int(parts[0])  # Return the class ID
+
+
+def create_class_mapping(class_ids):
+    return {f"class{id + 1}": id for id in class_ids}
+
+
+def process_txt_files(directory):
+    class_ids = set()
+    for filename in os.listdir(directory):
+        if filename.endswith(".txt"):
+            with open(os.path.join(directory, filename), 'r') as f:
+                for line in f:
+                    try:
+                        class_id = parse_txt_annotation(line.strip())
+                        class_ids.add(class_id)
+                    except ValueError:
+                        print(f"Skipping invalid line in {filename}: {line.strip()}")
+    return sorted(class_ids)

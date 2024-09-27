@@ -46,12 +46,12 @@ def draw_yolo_annotations(image_path, annotation_path, output_path):
 
 
 # Example usage
-image_dir = r"C:\Users\maxie\Desktop\FruitData\augmented\images"
-annotation_dir = r"C:\Users\maxie\Desktop\FruitData\augmented\annotations"
-output_dir = r"C:\Users\maxie\Desktop\FruitData\augmented\drawn_annotations"
+image_dir = r"C:\Users\maxie\Desktop\images\train"
+annotation_dir = r"C:\Users\maxie\Desktop\labels\train"
+output_dir = r"C:\Users\maxie\Desktop\bbox"
 
 for image_file in os.listdir(image_dir):
-    if image_file.endswith(".png"):
+    if image_file.endswith(".png") or image_file.endswith(".jpeg"):
         image_path = os.path.join(image_dir, image_file)
         annotation_file = os.path.splitext(image_file)[0] + ".txt"
         annotation_path = os.path.join(annotation_dir, annotation_file)

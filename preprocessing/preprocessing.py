@@ -299,6 +299,9 @@ def format_annotations(input_directory, output_directory):
        It is standard that Yolo is txt, pascalvoc is xml and coco is json, which is why this is checked. For CSV
        its just a general check for the values specified in COORD_VARIATIONS at the top.
        Class mapping is saved which is important for good inference afterwards."""
+    txt_class_ids = process_txt_files(input_directory)
+    txt_class_mapping = create_class_mapping(txt_class_ids)
+
     for annotation in os.listdir(input_directory):
         name = os.path.splitext(os.path.basename(annotation))[0]
         output_file = os.path.join(output_directory, f"{name}.txt")
@@ -308,7 +311,7 @@ def format_annotations(input_directory, output_directory):
         class_mapping = create_or_load_class_mapping(MAPPING_FILE)
         if annotation_format == TXT_YOLO:
             preprocess_txt_yolo_annotation(input_directory, annotation, output_file)
-            # Class Mapping makes no Sense for YOlo as it has only numbers
+            save_class_mapping(MAPPING_FILE, txt_class_mapping)
         elif annotation_format == XML_PASCALVOC:
             class_mapping = preprocess_xml_pascalvoc_annotation(input_directory, annotation, output_file, class_mapping)
             save_class_mapping(MAPPING_FILE, class_mapping)
@@ -420,10 +423,10 @@ def find_mask(basename, input_directory):
     print(f"Warning: Mask for {basename} not found")
 
 
-
 def segmentation_preprocess(input_image_directories, input_mask_directories):
     # Create Output Directories
-    output_image_directories, output_mask_directories = get_subdirectories(SEGMENTATION_PREPROCESSING_OUTPUT_DIR, MASK_PATH)
+    output_image_directories, output_mask_directories = get_subdirectories(SEGMENTATION_PREPROCESSING_OUTPUT_DIR,
+                                                                           MASK_PATH)
     create_directories(output_image_directories + output_mask_directories)
 
     # Go through every image and if corresponding mask is found, resize both
